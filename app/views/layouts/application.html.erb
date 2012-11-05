@@ -35,6 +35,26 @@
 
 	<div class="container">
 	  <div class="row">
+
+		<!-- Notification area -->
+		<% flash.each do |key, msg| %>
+			<% if key.to_s == "notice" %>
+				<div class="alert alert-success fade in">
+					<a class="close" data-dismiss="alert">×</a>
+			<% elsif key.to_s == "alert" %>
+				<div class="alert alert-error fade in">
+					<a class="close" data-dismiss="alert">×</a>
+			<% elsif key.to_s == "info" %>
+				<div class="alert alert-info fade in">
+					<a class="close" data-dismiss="alert">×</a>		
+			<% else %>
+				<div class="alert alert-error fade in" id="<%= key.to_s %>">
+					<a class="close" data-dismiss="alert">×</a>
+			<% end %>
+			<%= msg %>
+			</div>
+		<% end %>
+
 	    <div class="span9"><%= yield %></div>
 	    <div class="span3">
 	      <h2>About Us</h2>
