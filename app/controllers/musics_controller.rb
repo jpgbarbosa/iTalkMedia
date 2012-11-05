@@ -6,7 +6,7 @@ class MusicsController < ApplicationController
 
     respond_to do |format|
       format.html # index.html.erb
-      format.json { render json: @musics }
+      format.json { render :json => @musics }
     end
   end
 
@@ -17,7 +17,7 @@ class MusicsController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.json { render json: @music }
+      format.json { render :json => @music }
     end
   end
 
@@ -28,7 +28,7 @@ class MusicsController < ApplicationController
 
     respond_to do |format|
       format.html # new.html.erb
-      format.json { render json: @music }
+      format.json { render :json => @music }
     end
   end
 
@@ -44,11 +44,11 @@ class MusicsController < ApplicationController
 
     respond_to do |format|
       if @music.save
-        format.html { redirect_to @music, notice: 'Music was successfully created.' }
-        format.json { render json: @music, status: :created, location: @music }
+        format.html { redirect_to @music, :notice => 'Music was successfully created.' }
+        format.json { render :json => @music, :status => :created, :location => @music }
       else
-        format.html { render action: "new" }
-        format.json { render json: @music.errors, status: :unprocessable_entity }
+        format.html { render :action => "new" }
+        format.json { render :json => @music.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -60,11 +60,11 @@ class MusicsController < ApplicationController
 
     respond_to do |format|
       if @music.update_attributes(params[:music])
-        format.html { redirect_to @music, notice: 'Music was successfully updated.' }
+        format.html { redirect_to @music, :notice => 'Music was successfully updated.' }
         format.json { head :no_content }
       else
-        format.html { render action: "edit" }
-        format.json { render json: @music.errors, status: :unprocessable_entity }
+        format.html { render :action => "edit" }
+        format.json { render :json => @music.errors, :status => :unprocessable_entity }
       end
     end
   end

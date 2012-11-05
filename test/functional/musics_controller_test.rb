@@ -18,30 +18,30 @@ class MusicsControllerTest < ActionController::TestCase
 
   test "should create music" do
     assert_difference('Music.count') do
-      post :create, music: { name: @music.name, path: @music.path }
+      post :create, :music => { :name => @music.name, :path => @music.path }
     end
 
     assert_redirected_to music_path(assigns(:music))
   end
 
   test "should show music" do
-    get :show, id: @music
+    get :show, :id => @music
     assert_response :success
   end
 
   test "should get edit" do
-    get :edit, id: @music
+    get :edit, :id => @music
     assert_response :success
   end
 
   test "should update music" do
-    put :update, id: @music, music: { name: @music.name, path: @music.path }
+    put :update, :id => @music, :music => { :name => @music.name, :path => @music.path }
     assert_redirected_to music_path(assigns(:music))
   end
 
   test "should destroy music" do
     assert_difference('Music.count', -1) do
-      delete :destroy, id: @music
+      delete :destroy, :id => @music
     end
 
     assert_redirected_to musics_path
