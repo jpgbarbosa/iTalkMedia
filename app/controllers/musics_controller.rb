@@ -1,11 +1,14 @@
 class MusicsController < ApplicationController
 
   #require 'example_1.rb'
+  require 'lastfm'
 
   # GET /musics
   # GET /musics.json
   def index
     @musics = Music.all
+
+    # LastFM.getArtist('Muse')
 
     respond_to do |format|
       format.html # index.html.erb
