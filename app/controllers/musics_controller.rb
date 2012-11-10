@@ -1,4 +1,7 @@
 class MusicsController < ApplicationController
+
+  #require 'example_1.rb'
+
   # GET /musics
   # GET /musics.json
   def index
