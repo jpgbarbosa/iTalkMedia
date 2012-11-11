@@ -2,13 +2,22 @@ class MusicsController < ApplicationController
 
   #require 'example_1.rb'
   require 'lastfm'
+  require 'songkick'
 
   # GET /musics
   # GET /musics.json
   def index
     @musics = Music.all
 
-    # c = LastFM.getTrack('Muse','Madness')
+    # c = SongKick.getEventsForArtist('Muse',nil,nil)
+    # if c["success"]
+    #   ap c["data"]
+    # else
+    #   ap c["message"]
+    # end
+
+    # puts "---------------------------------------------------------------------"
+    # c = LastFM.getTrack('Depeche Mode','Personal Jesus')
     # ap c["data"]
 
     respond_to do |format|

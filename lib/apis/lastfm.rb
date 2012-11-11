@@ -65,10 +65,11 @@ module LastFM
     	end
     	
     	def self.generateUrl(params,type="json")
-    		url = ENV['BASE_URL']
+    		url = ENV['BASE_URL_LAST_FM']
 
     		params.each do |key,value|
-    			url+= '&' + key.to_s + '=' + value.to_s
+    			value_mod = value.to_s.gsub(' ','+')
+    			url+= '&' + key.to_s + '=' + value_mod.to_s
     		end
 
 			url+= '&api_key='+ENV['LAST_FM_API_KEY_BARBOSA']
