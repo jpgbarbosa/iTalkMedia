@@ -8,7 +8,8 @@ class MusicsController < ApplicationController
   def index
     @musics = Music.all
 
-    # LastFM.getArtist('Muse')
+    # c = LastFM.getTrack('Muse','Madness')
+    # ap c["data"]
 
     respond_to do |format|
       format.html # index.html.erb
