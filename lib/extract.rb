@@ -16,10 +16,10 @@ module Extract
 			lastfm = {}
 			songkick = {}
 			mp3 = {}
-			puts path.to_s+'*.mp3'
+			puts path.to_s
 
 			Dir.chdir('/')
-			files = Dir.glob(path.to_s+'*.mp3')
+			files = Dir.glob(path.to_s)
 			
 			# read and display infos & tags
 			files.each do |file|

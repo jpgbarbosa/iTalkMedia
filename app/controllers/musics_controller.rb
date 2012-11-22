@@ -3,6 +3,8 @@ class MusicsController < ApplicationController
   #require 'example_1.rb'
   require 'lastfm'
   require 'songkick'
+  require 'ap'
+  require 'extract'
 
   # GET /musics
   # GET /musics.json
@@ -56,11 +58,25 @@ class MusicsController < ApplicationController
   # POST /musics
   # POST /musics.json
   def create
-    @music = Music.new(params[:music])
+    # @music = Music.new(params[:music])
 
+    puts "---------------------"
+    c =  params[:music][:upload].tempfile
+
+  # Started POST "/musics" for 127.0.0.1 at Thu Nov 22 19:38:09 +0000 2012
+  # Processing by MusicsController#create as JSON
+  #   Parameters: {"utf8"=>"✓", "authenticity_token"=>"4yxY1p0mRaVpjDBP3+Qe1sBoEsMKcxW18cnFsEOfasg=", 
+  # "music"=>{"upload"=>#<ActionDispatch::Http::UploadedFile:0x1579446 
+  # @original_filename="vicarious.mp3", @headers="Content-Disposition: form-data;
+  # name=\"music[upload]\"; filename=\"vicarious.mp3\"\r\nContent-Type: audio/mp3\r\n",
+  # @tempfile=#<File:/tmp/RackMultipart.11733.32594>, @content_type="audio/mp3">}}
+
+    #c = Extract.allMusicInfo(c.path)
+
+    #redirect_to @music, 
     respond_to do |format|
-      if @music.save
-        format.html { redirect_to @music, :notice => 'Music was successfully created.' }
+      if true
+        format.html { redirect_to musics_path ,:notice => 'Music was successfully created.' }
         format.json { render :json => @music, :status => :created, :location => @music }
       else
         format.html { render :action => "new" }

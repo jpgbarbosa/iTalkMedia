@@ -27,6 +27,7 @@ group :assets do
 end
 
 gem 'jquery-rails'
+gem 'jquery-fileupload-rails'
 gem 'nokogiri'
 
 gem 'ruby-mp3info'
