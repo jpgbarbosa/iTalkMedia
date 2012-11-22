@@ -60,8 +60,8 @@ class MusicsController < ApplicationController
   def create
     # @music = Music.new(params[:music])
 
-    puts "---------------------"
-    c =  params[:music][:upload].tempfile
+    upload =  params[:music][:upload]
+    tempfile = upload.tempfile
 
   # Started POST "/musics" for 127.0.0.1 at Thu Nov 22 19:38:09 +0000 2012
   # Processing by MusicsController#create as JSON
@@ -71,13 +71,21 @@ class MusicsController < ApplicationController
   # name=\"music[upload]\"; filename=\"vicarious.mp3\"\r\nContent-Type: audio/mp3\r\n",
   # @tempfile=#<File:/tmp/RackMultipart.11733.32594>, @content_type="audio/mp3">}}
 
-    #c = Extract.allMusicInfo(c.path)
+    results = Extract.allMusicInfo(tempfile.path)
+
+    data_to_return = {"name" => upload.original_filename,
+                      "size" => upload.size }
 
     #redirect_to @music, 
     respond_to do |format|
-      if true
-        format.html { redirect_to musics_path ,:notice => 'Music was successfully created.' }
-        format.json { render :json => @music, :status => :created, :location => @music }
+      if results
+        format.html { 
+          render :json => [data_to_return].to_json,
+          :content_type => 'text/html',
+          :layout => false,
+          :notice => 'Music(s) were successfully added to your library!' 
+        }
+        format.json { render :json => [data_to_return].to_json, :status => :created, :location => @music }
       else
         format.html { render :action => "new" }
         format.json { render :json => @music.errors, :status => :unprocessable_entity }
