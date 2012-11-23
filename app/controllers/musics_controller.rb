@@ -65,7 +65,7 @@ class MusicsController < ApplicationController
     upload_results = nil
     path = nil
 
-    if params[:music][:path] != ""
+    if params[:music][:path] != "" && params[:music][:path] != nil
       path = params[:music][:path]
 
       if !path.to_s.end_with?('/')
