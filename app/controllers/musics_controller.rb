@@ -63,13 +63,7 @@ class MusicsController < ApplicationController
     upload =  params[:music][:upload]
     tempfile = upload.tempfile
 
-  # Started POST "/musics" for 127.0.0.1 at Thu Nov 22 19:38:09 +0000 2012
-  # Processing by MusicsController#create as JSON
-  #   Parameters: {"utf8"=>"✓", "authenticity_token"=>"4yxY1p0mRaVpjDBP3+Qe1sBoEsMKcxW18cnFsEOfasg=", 
-  # "music"=>{"upload"=>#<ActionDispatch::Http::UploadedFile:0x1579446 
-  # @original_filename="vicarious.mp3", @headers="Content-Disposition: form-data;
-  # name=\"music[upload]\"; filename=\"vicarious.mp3\"\r\nContent-Type: audio/mp3\r\n",
-  # @tempfile=#<File:/tmp/RackMultipart.11733.32594>, @content_type="audio/mp3">}}
+    puts tempfile.path
 
     results = Extract.allMusicInfo(tempfile.path)
 

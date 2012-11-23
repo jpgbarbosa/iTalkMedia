@@ -19,6 +19,13 @@ module Extract
 			puts path.to_s
 
 			Dir.chdir('/')
+
+			if path.to_s.end_with?('/')
+				path = path.to_s + '*.mp3'
+			end
+			
+			puts "Path to search: "+path.to_s
+
 			files = Dir.glob(path.to_s)
 			
 			# read and display infos & tags
