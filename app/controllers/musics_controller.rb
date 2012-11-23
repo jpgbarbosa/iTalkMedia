@@ -6,6 +6,8 @@ class MusicsController < ApplicationController
   require 'ap'
   require 'extract'
 
+  include ActionView::Helpers::TextHelper
+
   # GET /musics
   # GET /musics.json
   def index
@@ -60,19 +62,37 @@ class MusicsController < ApplicationController
   def create
     # @music = Music.new(params[:music])
 
-    upload =  params[:music][:upload]
-    tempfile = upload.tempfile
+    upload_results = nil
+    path = nil
 
-    puts tempfile.path
+    if params[:music][:path] != ""
+      path = params[:music][:path]
 
-    results = Extract.allMusicInfo(tempfile.path)
+      if !path.to_s.end_with?('/')
+        path = path.to_s + '/'
+      end
 
-    data_to_return = {"name" => upload.original_filename,
-                      "size" => upload.size }
+      path_results = Extract.allMusicInfo(path)
+
+      processed = path_results.length 
+
+      ap path_results[0]
+    elsif params[:music][:upload] != nil
+      upload =  params[:music][:upload]
+      tempfile = upload.tempfile
+
+      puts tempfile.path
+
+      upload_results = Extract.allMusicInfo(tempfile.path)
+
+      data_to_return = {"name" => upload.original_filename,
+                        "size" => upload.size }
+    end
+
 
     #redirect_to @music, 
     respond_to do |format|
-      if results
+      if upload_results
         format.html { 
           render :json => [data_to_return].to_json,
           :content_type => 'text/html',
@@ -80,9 +100,13 @@ class MusicsController < ApplicationController
           :notice => 'Music(s) were successfully added to your library!' 
         }
         format.json { render :json => [data_to_return].to_json, :status => :created, :location => @music }
+      elsif path_results != nil
+        format.html { redirect_to musics_path, :notice => pluralize(processed, 'music').to_s+" added to your library successfully" }
+        format.json { head :no_content }
       else
-        format.html { render :action => "new" }
-        format.json { render :json => @music.errors, :status => :unprocessable_entity }
+        flash[:error] = 'You must provide some input!'
+        format.html { redirect_to musics_path }
+        format.json { render :json => {"err" => 'no inputs'}, :status => :unprocessable_entity }
       end
     end
   end

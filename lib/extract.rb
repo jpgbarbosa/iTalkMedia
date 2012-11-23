@@ -20,7 +20,9 @@ module Extract
 
 			Dir.chdir('/')
 
-			if path.to_s.end_with?('/')
+			if path.to_s == "/"
+				path = ""
+			elsif path.to_s.end_with?('/')
 				path = path.to_s + '*.mp3'
 			end
 			
