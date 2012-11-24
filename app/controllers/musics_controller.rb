@@ -64,6 +64,7 @@ class MusicsController < ApplicationController
 
     upload_results = nil
     path = nil
+    data_processed = nil
 
     if params[:music][:path] != "" && params[:music][:path] != nil
       path = params[:music][:path]
@@ -76,7 +77,10 @@ class MusicsController < ApplicationController
 
       processed = path_results.length 
 
+      data_processed = path_results
+
       ap path_results[0]
+
     elsif params[:music][:upload] != nil
       upload =  params[:music][:upload]
       tempfile = upload.tempfile
@@ -85,9 +89,18 @@ class MusicsController < ApplicationController
 
       upload_results = Extract.allMusicInfo(tempfile.path)
 
+      data_processed = upload_results
+
       data_to_return = {"name" => upload.original_filename,
                         "size" => upload.size }
     end
+
+
+    # WS processing
+    # data_processed
+
+
+
 
 
     #redirect_to @music, 

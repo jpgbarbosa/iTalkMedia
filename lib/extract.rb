@@ -4,10 +4,11 @@ require "mp3info"
 
 require 'lastfm'
 require 'songkick'
+require 'lyrics'
+
 # gem install ruby-mp3info
 
 # './bc_album/*.mp3'
-
 
 module Extract
 	public
@@ -15,6 +16,9 @@ module Extract
 			musics = []
 			lastfm = {}
 			songkick = {}
+			lyrics = {}
+
+
 			mp3 = {}
 			puts path.to_s
 
@@ -66,9 +70,14 @@ module Extract
 						songkick["events"] = SongKick.getEventsForArtist(mp3["artist"],nil,nil)
 					end
 
+					#Lyrics info
+					if mp3["artist"]!=nil && mp3["title"]!=nil
+						lyrics["title"] = ChartLyricsAPI.getLyric(mp3["artist"],mp3["title"])
+					end
+
 				end #mp3Info
 
-				musics << [mp3,lastfm,songkick]
+				musics << [mp3,lastfm,songkick,lyrics]
 
 			end #files each
 

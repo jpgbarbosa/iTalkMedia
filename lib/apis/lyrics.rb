@@ -36,16 +36,16 @@ module ChartLyricsAPI
       return ret_value
     end
   
-    if doc["ArrayOfSearchLyricResult"]["SearchLyricResult"]["xsi:nil"]=="true"
+    if doc["ArrayOfSearchLyricResult"]["SearchLyricResult"]["xsi:nil"]
       ret_value["success"] = false
       ret_value["message"] = doc["message"]
       return ret_value
     end
   
     begin
-      LyricID = doc["ArrayOfSearchLyricResult"]["SearchLyricResult"][0]["LyricId"]
-      LyricCS = doc["ArrayOfSearchLyricResult"]["SearchLyricResult"][0]["LyricChecksum"]
-      params = {:lyricID=>LyricID, :lyricCheckSum=LyricCS}
+      lyricID = doc["ArrayOfSearchLyricResult"]["SearchLyricResult"][0]["LyricId"]
+      lyricCS = doc["ArrayOfSearchLyricResult"]["SearchLyricResult"][0]["LyricChecksum"]
+      params = {:lyricID => lyricID, :lyricCheckSum => lyricCS}
       url = generateUrl(params, "getLyric")
       doc = HTTParty.get(url).parsed_response
     rescue Exception => e
