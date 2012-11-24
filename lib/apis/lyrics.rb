@@ -36,7 +36,7 @@ module ChartLyricsAPI
       return ret_value
     end
   
-    if doc["ArrayOfSearchLyricResult"]["SearchLyricResult"]["xsi:nil"]
+    if doc["ArrayOfSearchLyricResult"]["SearchLyricResult"].length == 0
       ret_value["success"] = false
       ret_value["message"] = doc["message"]
       return ret_value
