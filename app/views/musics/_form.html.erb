@@ -35,11 +35,17 @@
 <div class="fileupload-loading"></div>
 <br>
 <!-- The table listing the files available for upload/download -->
-<table class="table table-striped"><tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody>
+<table class="table table-striped">
+  <tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody>
 </table>
-  <div class="form-actions">
-    
-  </div>
+<span style="text-align:center" >
+      <h5>Drag Musics Here</h5>
+</span>
+  <!-- <div class="form-actions">
+    <span style="text-align:center" >
+      <h5>Drag Musics Here</h5>
+    </span>
+  </div> -->
 <% end %>
 
 
@@ -70,7 +76,7 @@ var fileUploadErrors = {
       </td>
     {% } else if (o.files.valid && !i) { %}
       <td>
-        <div class="progress progress-success progress-striped active">
+        <div class="progress progress-success progress-striped active" style="width:130px">
           <div class="bar" style="width:0%;"></div>
         </div>
       </td>
