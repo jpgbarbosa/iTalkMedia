@@ -13,6 +13,8 @@ class MusicsController < ApplicationController
   def index
     @musics = Music.all
 
+    puts ONTOLOGY
+
     # c = SongKick.getEventsForArtist('Muse',nil,nil)
     # if c["success"]
     #   ap c["data"]
