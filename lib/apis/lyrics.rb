@@ -27,18 +27,24 @@ module ChartLyricsAPI
 
     rescue Exception => e
 
-      puts e.message
-      puts e.backtrace.join("\n")
+      #puts e.message
+      #puts e.backtrace.join("\n")
 
       ret_value["success"] = false
       ret_value["message"] = e.message
 
       return ret_value
     end
+    
+    if doc["ArrayOfSearchLyricResult"]["SearchLyricResult"] == nil
+      ret_value["success"] = false
+      ret_value["message"] = "ERROR"
+      return ret_value
+    end
   
     if doc["ArrayOfSearchLyricResult"]["SearchLyricResult"].length == 0
       ret_value["success"] = false
-      ret_value["message"] = doc["message"]
+      ret_value["message"] = "ERROR"
       return ret_value
     end
   
@@ -49,8 +55,8 @@ module ChartLyricsAPI
       url = generateUrl(params, "getLyric")
       doc = HTTParty.get(url).parsed_response
     rescue Exception => e
-      puts e.message
-      puts e.backtrace.join("\n")
+      #puts e.message
+      #puts e.backtrace.join("\n")
 
       ret_value["success"] = false
       ret_value["message"] = e.message

@@ -57,7 +57,7 @@ module LastFM
 				ret_value["message"] = doc["message"]
 			else
 				ret_value["success"] = true
-				ret_value["data"] = doc
+				ret_value["data"] = doc.parsed_response
 			end
 
 			return ret_value

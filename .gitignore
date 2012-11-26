@@ -72,3 +72,6 @@ db/*.sqlite3
 
 /lib/jars/*
 /lib/jar/*
+
+# JENA TDB
+/music_database

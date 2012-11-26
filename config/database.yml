@@ -14,7 +14,7 @@ development:
   reconnect: false
   database: iTalkMedia_development
   username: root
-  password:
+  password: root
   host: localhost
 
 # Warning: The database defined as "test" will be erased and

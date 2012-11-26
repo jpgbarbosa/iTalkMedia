@@ -35,8 +35,8 @@ module SongKick
 
 			rescue Exception => e
 
-				puts e.message
-				puts e.backtrace.join("\n")
+				#puts e.message
+				#puts e.backtrace.join("\n")
 
 				ret_value["success"] = false
 				ret_value["message"] = e.message
