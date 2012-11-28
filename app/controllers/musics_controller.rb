@@ -4,18 +4,18 @@ class MusicsController < ApplicationController
   require 'ap'
   require 'extract'
 
-  require '/lib/jar/javalib/commons-codec-1.5.jar'
-  require '/lib/jar/javalib/jena-core-2.7.3.jar'     
-  require '/lib/jar/javalib/slf4j-api-1.6.4.jar'
-  require '/lib/jar/javalib/httpclient-4.1.2.jar'
-  require '/lib/jar/javalib/jena-iri-0.9.3.jar'     
-  require '/lib/jar/javalib/slf4j-log4j12-1.6.4.jar'
-  require '/lib/jar/javalib/httpcore-4.1.3.jar'
-  require '/lib/jar/javalib/jena-tdb-0.9.3.jar'
-  require '/lib/jar/javalib/xercesImpl-2.10.0.jar'
-  require '/lib/jar/javalib/jena-arq-2.9.3.jar'
-  require '/lib/jar/javalib/log4j-1.2.16.jar'
-  require '/lib/jar/javalib/xml-apis-1.4.01.jar'
+  require 'lib/jar/javalib/commons-codec-1.5.jar'
+  require 'lib/jar/javalib/jena-core-2.7.3.jar'     
+  require 'lib/jar/javalib/slf4j-api-1.6.4.jar'
+  require 'lib/jar/javalib/httpclient-4.1.2.jar'
+  require 'lib/jar/javalib/jena-iri-0.9.3.jar'     
+  require 'lib/jar/javalib/slf4j-log4j12-1.6.4.jar'
+  require 'lib/jar/javalib/httpcore-4.1.3.jar'
+  require 'lib/jar/javalib/jena-tdb-0.9.3.jar'
+  require 'lib/jar/javalib/xercesImpl-2.10.0.jar'
+  require 'lib/jar/javalib/jena-arq-2.9.3.jar'
+  require 'lib/jar/javalib/log4j-1.2.16.jar'
+  require 'lib/jar/javalib/xml-apis-1.4.01.jar'
 
   require 'java'
   
@@ -70,7 +70,7 @@ class MusicsController < ApplicationController
   # GET /musics/1
   # GET /musics/1.json
   def show
-    @music = Music.find(params[:id])
+    @music = {name: "cenas"}
 
     respond_to do |format|
       format.html # show.html.erb

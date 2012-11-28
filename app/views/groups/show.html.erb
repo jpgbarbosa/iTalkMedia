@@ -1,0 +1,35 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @group.name %>
+</p>
+
+<p>
+  <b>Genre:</b>
+  <%= @group.genre %>
+</p>
+
+<p>
+  <b>Foundationyear:</b>
+  <%= @group.foundationYear %>
+</p>
+
+<p>
+  <b>Endyear:</b>
+  <%= @group.endYear %>
+</p>
+
+<p>
+  <b>Bio:</b>
+  <%= @group.bio %>
+</p>
+
+<p>
+  <b>Lastfmurl:</b>
+  <%= @group.lastfmUrl %>
+</p>
+
+
+<%= link_to 'Edit', edit_group_path(@group) %> |
+<%= link_to 'Back', groups_path %>
