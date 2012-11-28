@@ -46,8 +46,8 @@ module Extract
 					mp3["artist"] = mp3info.tag.artist
 					mp3["album"] = mp3info.tag.album
 					mp3["tracknum"] = mp3info.tag.tracknum
-					mp3["length"] = mp3info.tag.length
-					mp3["bitrate"] = mp3info.tag.bitrate
+					mp3["length"] = mp3info.length.to_i
+					mp3["bitrate"] = mp3info.bitrate
 					mp3["genre"] = mp3info.tag2.TCON
 					mp3["year"] = mp3info.tag2.TYER
 

@@ -11,142 +11,166 @@
     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
   xml:base="http://musicontology.ws.dei.uc.pt/ontology.owl">
   <owl:Ontology rdf:about=""/>
-  <owl:Class rdf:ID="Track"/>
-  <owl:Class rdf:ID="Album"/>
-  <owl:Class rdf:ID="City"/>
-  <owl:Class rdf:ID="Concert"/>
-  <owl:Class rdf:ID="Genre"/>
-  <owl:Class rdf:ID="Place"/>
-  <owl:Class rdf:ID="Country"/>
-  <owl:Class rdf:ID="Label"/>
-  <owl:Class rdf:ID="Artist"/>
-  <owl:Class rdf:ID="MusicalGroup"/>
-  <rdf:Property rdf:ID="hasBio">
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-    <rdfs:domain rdf:resource="#MusicalGroup"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="hasArtist">
-    <rdfs:domain rdf:resource="#MusicalGroup"/>
-    <rdfs:range rdf:resource="#Artist"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="isSimilarTo">
-    <rdfs:domain rdf:resource="#MusicalGroup"/>
-    <rdfs:range rdf:resource="#MusicalGroup"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="endYear">
-    <rdfs:domain rdf:resource="#MusicalGroup"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="year">
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
-    <rdfs:domain rdf:resource="#Track"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="hasLyric">
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-    <rdfs:domain rdf:resource="#Track"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="placeFormed">
-    <rdfs:range rdf:resource="#Place"/>
-    <rdfs:domain rdf:resource="#MusicalGroup"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="hasAlbum">
-    <rdfs:domain rdf:resource="#MusicalGroup"/>
-    <rdfs:range rdf:resource="#Album"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="hasLabel">
-    <rdfs:domain rdf:resource="#MusicalGroup"/>
-    <rdfs:range rdf:resource="#Label"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="name">
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-    <rdfs:domain>
-      <owl:Class>
-        <owl:unionOf rdf:parseType="Collection">
-          <owl:Class rdf:about="#MusicalGroup"/>
-          <owl:Class rdf:about="#Artist"/>
-          <owl:Class rdf:about="#Genre"/>
-          <owl:Class rdf:about="#Label"/>
-          <owl:Class rdf:about="#Track"/>
-          <owl:Class rdf:about="#Album"/>
-          <owl:Class rdf:about="#City"/>
-          <owl:Class rdf:about="#Country"/>
-          <owl:Class rdf:about="#Concert"/>
-        </owl:unionOf>
-      </owl:Class>
-    </rdfs:domain>
-  </rdf:Property>
-  <rdf:Property rdf:ID="inPlace">
+  <rdfs:Class rdf:ID="Track"/>
+  <rdfs:Class rdf:ID="Album"/>
+  <rdfs:Class rdf:ID="City"/>
+  <rdfs:Class rdf:ID="Concert"/>
+  <rdfs:Class rdf:ID="Genre"/>
+  <rdfs:Class rdf:ID="Place"/>
+  <rdfs:Class rdf:ID="Country"/>
+  <rdfs:Class rdf:ID="Label"/>
+  <rdfs:Class rdf:ID="Artist"/>
+  <rdfs:Class rdf:ID="MusicalGroup"/>
+  <owl:ObjectProperty rdf:ID="inPlace">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:range rdf:resource="#Place"/>
     <rdfs:domain rdf:resource="#Concert"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="tracklength">
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
-    <rdfs:domain rdf:resource="#Track"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="inCountry">
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="inCountry">
     <rdfs:range rdf:resource="#Country"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:domain rdf:resource="#Place"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="inCity">
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="inCity">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:domain rdf:resource="#Place"/>
     <rdfs:range rdf:resource="#City"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="isLastFMSimilar">
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasArtist">
     <rdfs:domain rdf:resource="#MusicalGroup"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="lastFMURL">
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-    <rdfs:domain rdf:resource="#MusicalGroup"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="hasTrack">
+    <rdfs:range rdf:resource="#Artist"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasTrack">
     <rdfs:range rdf:resource="#Track"/>
     <rdfs:domain rdf:resource="#MusicalGroup"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="bitrate">
-    <rdfs:domain rdf:resource="#Track"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="musicalgroup">
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="musicalgroup">
     <rdfs:domain>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
-          <owl:Class rdf:about="#Album"/>
-          <owl:Class rdf:about="#Track"/>
-          <owl:Class rdf:about="#Concert"/>
+          <rdfs:Class rdf:about="#Album"/>
+          <rdfs:Class rdf:about="#Track"/>
+          <rdfs:Class rdf:about="#Concert"/>
         </owl:unionOf>
       </owl:Class>
     </rdfs:domain>
     <rdfs:range rdf:resource="#MusicalGroup"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="tracknum">
-    <rdfs:domain rdf:resource="#Track"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="genre">
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="genre">
     <rdfs:domain>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
-          <owl:Class rdf:about="#Album"/>
-          <owl:Class rdf:about="#Track"/>
-          <owl:Class rdf:about="#MusicalGroup"/>
+          <rdfs:Class rdf:about="#Album"/>
+          <rdfs:Class rdf:about="#Track"/>
+          <rdfs:Class rdf:about="#MusicalGroup"/>
         </owl:unionOf>
       </owl:Class>
     </rdfs:domain>
+    <rdfs:range rdf:resource="#Genre"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasAlbum">
+    <rdfs:domain rdf:resource="#MusicalGroup"/>
+    <rdfs:range rdf:resource="#Album"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="placeFormed">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:range rdf:resource="#Place"/>
+    <rdfs:domain rdf:resource="#MusicalGroup"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasLabel">
+    <rdfs:domain rdf:resource="#MusicalGroup"/>
+    <rdfs:range rdf:resource="#Label"/>
+  </owl:ObjectProperty>
+  <owl:DatatypeProperty rdf:ID="name">
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="foundationYear">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:domain>
+      <owl:Class>
+        <owl:unionOf rdf:parseType="Collection">
+          <rdfs:Class rdf:about="#MusicalGroup"/>
+          <rdfs:Class rdf:about="#Artist"/>
+          <rdfs:Class rdf:about="#Genre"/>
+          <rdfs:Class rdf:about="#Label"/>
+          <rdfs:Class rdf:about="#Track"/>
+          <rdfs:Class rdf:about="#Album"/>
+          <rdfs:Class rdf:about="#City"/>
+          <rdfs:Class rdf:about="#Country"/>
+          <rdfs:Class rdf:about="#Concert"/>
+        </owl:unionOf>
+      </owl:Class>
+    </rdfs:domain>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="tracklength">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    <rdfs:domain rdf:resource="#Track"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="hasBio">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:domain rdf:resource="#MusicalGroup"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="lastFMURL">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:domain rdf:resource="#MusicalGroup"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="bitrate">
+    <rdfs:domain rdf:resource="#Track"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="tracknum">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:domain rdf:resource="#Track"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="foundationYear">
+    <rdfs:domain rdf:resource="#MusicalGroup"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="endYear">
     <rdfs:domain rdf:resource="#MusicalGroup"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="trackcount">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="year">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:domain rdf:resource="#Track"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="date">
+    <rdfs:domain rdf:resource="#Concert"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="hasLyric">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:domain rdf:resource="#Track"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:DatatypeProperty>
+  <owl:SymmetricProperty rdf:ID="isLastFMSimilar">
+    <rdfs:domain rdf:resource="#MusicalGroup"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:range rdf:resource="#MusicalGroup"/>
+    <owl:inverseOf rdf:resource="#isLastFMSimilar"/>
+  </owl:SymmetricProperty>
+  <owl:SymmetricProperty rdf:ID="isSimilarTo">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="#MusicalGroup"/>
+    <rdfs:range rdf:resource="#MusicalGroup"/>
+    <owl:inverseOf rdf:resource="#isSimilarTo"/>
+  </owl:SymmetricProperty>
+  <owl:FunctionalProperty rdf:ID="hasCover">
+    <rdfs:domain rdf:resource="#Album"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </owl:FunctionalProperty>
+  <owl:FunctionalProperty rdf:ID="trackcount">
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
     <rdfs:domain rdf:resource="#Album"/>
-  </rdf:Property>
-  <rdf:Property rdf:ID="date">
-    <rdfs:domain rdf:resource="#Concert"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
-  </rdf:Property>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </owl:FunctionalProperty>
 </rdf:RDF>
 
 <!-- Created with Protege (with OWL Plugin 3.4.8, Build 629)  http://protege.stanford.edu -->

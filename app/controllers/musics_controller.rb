@@ -4,8 +4,8 @@ class MusicsController < ApplicationController
   require 'ap'
   require 'extract'
 
-  require '/lib/jar/javalib/commons-codec-1.5.jar'
-  require '/lib/jar/javalib/jena-core-2.7.3.jar'     
+  require 'lib/jar/javalib/commons-codec-1.5.jar'
+  require 'lib/jar/javalib/jena-core-2.7.3.jar'     
   require '/lib/jar/javalib/slf4j-api-1.6.4.jar'
   require '/lib/jar/javalib/httpclient-4.1.2.jar'
   require '/lib/jar/javalib/jena-iri-0.9.3.jar'     
@@ -43,7 +43,10 @@ class MusicsController < ApplicationController
     
     begin
       dataset.begin(ReadWrite::READ)
-      qExec = QueryExecutionFactory.create("SELECT * {?s ?p ?o}", dataset)
+      query = "PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>" +
+					    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>" +
+					    "SELECT ?x ?a WHERE { ?x mo:hasCover ?a }"
+      qExec = QueryExecutionFactory.create(query, dataset)
       rs = qExec.exec_select()
       ResultSetFormatter.out(rs)
     ensure
@@ -144,6 +147,8 @@ class MusicsController < ApplicationController
     dataset.begin(ReadWrite::WRITE)
     begin
       model = dataset.get_default_model()
+      model.set_ns_prefix("mo", ontology_ns)
+      model.set_ns_prefix("item", ns)
       
       # CLASSES #
 			ont_artist = ONTOLOGY.get_ont_class(ontology_ns+"Artist")
@@ -158,30 +163,31 @@ class MusicsController < ApplicationController
 			ont_track = ONTOLOGY.get_ont_class(ontology_ns+"Track")
       
       # PROPERTIES #
-			ont_p_name = ONTOLOGY.get_property(ns+"name")
-			ont_p_endYear = ONTOLOGY.get_property(ns+"endYear")
-			ont_p_foundationYear = ONTOLOGY.get_property(ns+"foundationYear")
-			ont_p_year = ONTOLOGY.get_property(ns+"year")
-			ont_p_hasAlbum = ONTOLOGY.get_property(ns+"hasAlbum")
-			ont_p_hasArtist = ONTOLOGY.get_property(ns+"hasArtist")
-			ont_p_hasLyric = ONTOLOGY.get_property(ns+"hasLyric")
-			ont_p_hasLabel = ONTOLOGY.get_property(ns+"hasLabel")
-			ont_p_hasTrack = ONTOLOGY.get_property(ns+"hasTrack")
-      ont_p_hasBio = ONTOLOGY.get_property(ns+"hasBio")
-			ont_p_trackLength = ONTOLOGY.get_property(ns+"tracklength")
-			ont_p_inPlace = ONTOLOGY.get_property(ns+"inPlace")
-			ont_p_inCountry = ONTOLOGY.get_property(ns+"inCountry")
-			ont_p_inCity = ONTOLOGY.get_property(ns+"inCity")
-      ont_p_placeFormed = ONTOLOGY.get_property(ns+"placeFormed")
-      ont_p_isSimilarTo = ONTOLOGY.get_property(ns+"isSimilarTo")
-      ont_p_isLastFMSimilar = ONTOLOGY.get_property(ns+"isLastFMSimilar")
-			ont_p_lastFMURL = ONTOLOGY.get_property(ns+"lastFMURL")
-			ont_p_bitrate = ONTOLOGY.get_property(ns+"bitrate")
-			ont_p_musicalGroup = ONTOLOGY.get_property(ns+"musicalgroup")
-			ont_p_genre = ONTOLOGY.get_property(ns+"genre")
-			ont_p_trackcount = ONTOLOGY.get_property(ns+"trackcount")
-			ont_p_date = ONTOLOGY.get_property(ns+"date")
-			ont_p_tracknum = ONTOLOGY.get_property(ns+"tracknum")
+			ont_p_name = ONTOLOGY.get_property(ontology_ns+"name")
+			ont_p_endYear = ONTOLOGY.get_property(ontology_ns+"endYear")
+			ont_p_foundationYear = ONTOLOGY.get_property(ontology_ns+"foundationYear")
+			ont_p_year = ONTOLOGY.get_property(ontology_ns+"year")
+			ont_p_hasAlbum = ONTOLOGY.get_property(ontology_ns+"hasAlbum")
+			ont_p_hasArtist = ONTOLOGY.get_property(ontology_ns+"hasArtist")
+			ont_p_hasLyric = ONTOLOGY.get_property(ontology_ns+"hasLyric")
+			ont_p_hasLabel = ONTOLOGY.get_property(ontology_ns+"hasLabel")
+			ont_p_hasTrack = ONTOLOGY.get_property(ontology_ns+"hasTrack")
+      ont_p_hasCover = ONTOLOGY.get_property(ontology_ns+"hasCover")
+      ont_p_hasBio = ONTOLOGY.get_property(ontology_ns+"hasBio")
+			ont_p_trackLength = ONTOLOGY.get_property(ontology_ns+"tracklength")
+			ont_p_inPlace = ONTOLOGY.get_property(ontology_ns+"inPlace")
+			ont_p_inCountry = ONTOLOGY.get_property(ontology_ns+"inCountry")
+			ont_p_inCity = ONTOLOGY.get_property(ontology_ns+"inCity")
+      ont_p_placeFormed = ONTOLOGY.get_property(ontology_ns+"placeFormed")
+      ont_p_isSimilarTo = ONTOLOGY.get_property(ontology_ns+"isSimilarTo")
+      ont_p_isLastFMSimilar = ONTOLOGY.get_property(ontology_ns+"isLastFMSimilar")
+			ont_p_lastFMURL = ONTOLOGY.get_property(ontology_ns+"lastFMURL")
+			ont_p_bitrate = ONTOLOGY.get_property(ontology_ns+"bitrate")
+			ont_p_musicalGroup = ONTOLOGY.get_property(ontology_ns+"musicalgroup")
+			ont_p_genre = ONTOLOGY.get_property(ontology_ns+"genre")
+			ont_p_trackcount = ONTOLOGY.get_property(ontology_ns+"trackcount")
+			ont_p_date = ONTOLOGY.get_property(ontology_ns+"date")
+			ont_p_tracknum = ONTOLOGY.get_property(ontology_ns+"tracknum")
       
       puts "---------\nSIZE: #{data_processed.length}\n--------"
       
@@ -189,19 +195,26 @@ class MusicsController < ApplicationController
         group_info = data[1]["artist"]["data"]["artist"]
         track_info = data[1]["title"]["data"]["track"]
         
+        # MUSIC GROUP INFO #
+        
         musical_group = model.create_resource(ns+"#{group_info["mbid"]}", ont_musicalGroup)
         track = model.create_resource(ns+"#{track_info["id"]}", ont_track)
-        musical_group.add_property(ont_p_hasTrack, track)
+        
+        musical_group.add_property(ont_p_name, data[0]["artist"])
+        musical_group.add_property(ont_p_lastFMURL, group_info["url"])
+        musical_group.add_property(ont_p_hasCover, group_info["image"][-1]["#text"]) #the biggest
         
         members = group_info["bandmembers"]["member"]
         members.each do |member|
-          member_resource = model.create_resource(ns+member["name"], ont_artist)
+          member_resource = model.create_resource(ns+group_info["name"]+"/"+member["name"], ont_artist)
+          member_resource.add_property(ont_p_name, member["name"])
           musical_group.add_property(ont_p_hasArtist, member_resource)
         end
         
         tags = group_info["tags"]["tag"]
         tags.each do |tag|
           tag_resource = model.create_resource(tag["url"], ont_genre) # tag url is the URI
+          tag_resource.add_property(ont_p_name, tag["name"])
           musical_group.add_property(ont_p_genre, tag_resource)
         end
         
@@ -211,6 +224,58 @@ class MusicsController < ApplicationController
         if bio_info["formationlist"]["formation"]["yearto"]!=nil && bio_info["formationlist"]["formation"]["yearto"] != ""
           musical_group.add_property(ont_p_foundationYear, bio_info["formationlist"]["formation"]["yearto"])
         end
+        
+        #- LastFM Similar #
+        similars = group_info["similar"]["artist"]
+        similars.each do |s|
+          s_iter = model.list_subjects_with_property(ont_p_lastFMURL, s["url"])
+          while s_iter.has_next
+            sim = s_iter.next_resource
+            musical_group.add_property(ont_p_isLastFMSimilar, sim)
+            sim.add_property(ont_p_isLastFMSimilar, musical_group)
+          end
+        end
+        
+        
+        # ALBUM INFO #
+        album_info = data[1]["album"]["data"]["album"]
+
+        album = model.create_resource(ns+"#{album_info["mbid"]}", ont_album)
+        album.add_property(ont_p_name, data[0]["album"])
+        album.add_property(ont_p_trackcount, album_info["tracks"].size)
+        album.add_property(ont_p_lastFMURL, album_info["url"])
+        puts album_info["image"][-1]["#text"]
+        album.add_property(ont_p_hasCover, album_info["image"][-1]["#text"]) #the biggest
+        
+        tags = album_info["toptags"]["tag"]
+        tags.each do |tag|
+          tag_resource = model.create_resource(tag["url"], ont_genre)
+          tag_resource.add_property(ont_p_name, tag["name"])
+          album.add_property(ont_p_genre, tag_resource)
+        end
+
+        musical_group.add_property(ont_p_hasAlbum, album)
+        
+        
+        # TRACK INFO #
+        track.add_property(ont_p_name, data[0]["title"])
+        
+        if(data[0]["bitrate"]) != nil
+          track.add_property(ont_p_bitrate, data[0]["bitrate"])
+        end
+        
+        track.add_property(ont_p_trackLength, data[0]["length"])
+        track.add_property(ont_p_year, data[0]["year"])
+        track.add_property(ont_p_tracknum, data[0]["tracknum"])
+        
+        tags = track_info["toptags"]["tag"]
+        tags.each do |tag|
+          tag_resource = model.create_resource(tag["url"], ont_genre)
+          tag_resource.add_property(ont_p_name, tag["name"])
+          track.add_property(ont_p_genre, tag_resource)
+        end
+        model.write(java.lang.System::out, "RDF/XML-ABBREV")
+        # EVENTS INFO #
       end
       
       
