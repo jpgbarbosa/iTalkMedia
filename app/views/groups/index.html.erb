@@ -17,17 +17,21 @@
     <tbody>
         <% @groups.each do |group| %>
           <tr>
-            <td><%= group.name %></td>
-            <td><%= group.genre %></td>
-            <td><%= group.foundationYear %></td>
-            <td><%= link_to 'lastFM', group.lastfmUrl %></td>
+            <td><%= group[:name] %></td>
+            <% if group[:genre]!=nil && group[:genre].length > 0 %>
+                <td><%= group[:genre][0] %></td>
+            <%else%>
+                <td> undefined </td>
+            <%end%>
+             <!-- getting first one only -->
+            <td><%= group[:foundationYear] %></td>
+            <td><%= link_to 'lastFM', group[:lastfmUrl] %></td>
+
             <td><%= link_to 'Show', group %></td>
-            <td><%= link_to 'Edit', edit_group_path(group) %></td>
+            <td><%= link_to 'Edit', "edit_group_path(group)" %></td>
             <td><%= link_to 'Destroy', group, method: :delete, data: { confirm: 'Are you sure?' } %></td>
           </tr>
         <% end %>
     </tbody>
 </table>
-
-<br />
 

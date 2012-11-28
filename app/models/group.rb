@@ -34,6 +34,18 @@ class Group < ActiveRecord::Base
   	return data
   end
 
+
+  def self.tdbGetGroupInfoAll
+
+  	#TODO query to get all bands ids and for each use the above func
+
+  	data_return = []
+
+  	#for each
+  	data_return << tdbGetGroupInfo(2)
+
+  	return  data_return
+  end
 end
 
 #nome_festival, cidade, país, data, type, coords
