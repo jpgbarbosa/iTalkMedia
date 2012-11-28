@@ -1,4 +1,6 @@
 ITalkMedia::Application.routes.draw do
+  resources :groups
+
   resources :musics
 
   # The priority is based upon order of creation:
