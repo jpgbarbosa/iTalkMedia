@@ -1,34 +1,160 @@
 <p id="notice"><%= notice %></p>
 
-<p>
-  <b>Name:</b>
-  <%= @group.name %>
-</p>
 
-<p>
-  <b>Genre:</b>
-  <%= @group.genre %>
-</p>
+<div class="accordion">
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+        Band
+      </a>
+    </div>
+    <div id="collapseOne" class="accordion-body collapse in">
+      <div class="accordion-inner">
+        <dl class="dl-horizontal">
+          <dt><strong>Name:</strong></dt>
+          <dd><%= @group[:name] %></dd>
+          <dt><strong>Genre:</strong></dt>
+          <% g_genres ="" %>
+          <% @group[:genre].each do |g| %>
+            <% g_genres << g << " " %>
+          <%end%>
+          <dd><%= g_genres %></dd>
+          <dt><strong>Foundation Year:</strong></dt>
+          <dd><%= @group[:foundationYear] %></dd>
 
-<p>
-  <b>Foundationyear:</b>
-  <%= @group.foundationYear %>
-</p>
+          <% if @group[:endYear] != nil %>
+            <dt><strong>End Year:</strong></dt>
+            <dd><%= @group[:endYear] %></dd>
+          <% end %>
+          <% if @group[:place_formed] != nil %>
+            <dt><strong>From:</strong></dt>
+            <dd><%= @group[:place_formed] %></dd>
+          <% end %>
+          </br>
+          <dd><%= link_to 'LastFM Profile', @group[:lastfmUrl]%></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
 
-<p>
-  <b>Endyear:</b>
-  <%= @group.endYear %>
-</p>
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseMembers">
+        Members
+      </a>
+    </div>
+    <div id="collapseMembers" class="accordion-body collapse">
+      <div class="accordion-inner">
+          <table class="table table-striped">
+            <thead>
+              <tr> 
+                <th>#</th>
+                <th>Name</th>
+              </tr>
+            <thead>
+            <tbody>
+              <% ctr = 1 %>
+              <% @group[:members].each do |g| %>
+                <tr> 
+                  <td><%=ctr%></td>
+                  <td><%=g%></td>
+                </tr>
+                <% ctr+=1 %>
+              <%end%>
+            </tbody>
 
-<p>
-  <b>Bio:</b>
-  <%= @group.bio %>
-</p>
+          </table>
+      </div>
+    </div>
+  </div>
 
-<p>
-  <b>Lastfmurl:</b>
-  <%= @group.lastfmUrl %>
-</p>
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+        Bio
+      </a>
+    </div>
+    <div id="collapseTwo" class="accordion-body collapse">
+      <div class="accordion-inner">
+          <dd><%= @group[:bio] %></dd>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
+        Albuns
+      </a>
+    </div>
+    <div id="collapseThree" class="accordion-body collapse">
+      <div class="accordion-inner">
+          <table class="table table-striped">
+            <thead>
+              <tr> 
+                <th>#</th>
+                <th>Name</th>
+              </tr>
+            <thead>
+            <tbody>
+              <% ctr = 1 %>
+              <% @group[:albuns].each do |g| %>
+                <tr> 
+                  <td><%=ctr%></td>
+                  <td><%=g%></td>
+                </tr>
+                <% ctr+=1 %>
+              <%end%>
+            </tbody>
+
+          </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseNextConcerts">
+        Next concerts
+      </a>
+    </div>
+    <div id="collapseNextConcerts" class="accordion-body collapse">
+      <div class="accordion-inner">
+          <table class="table table-striped">
+            <thead>
+              <tr> 
+                <th>#</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>City</th>
+                <th>Country</th>
+                <th></th> <!-- map -->
+
+              </tr>
+            <thead>
+            <tbody>
+              <% ctr = 1 %>
+              <% @group[:next_concerts].each do |g| %>
+                <tr> 
+                  <td><%= ctr %></td>
+                  <td><%= g[:name] %></td>
+                  <td><%= g[:type] %></td>
+                  <td><%= g[:city] %></td>
+                  <td><%= g[:country] %></td>
+                  <td><%= link_to 'map', g[:coords] %></td> <!-- map -->
+                </tr>
+                <% ctr+=1 %>
+              <%end%>
+            </tbody>
+
+          </table>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
 
 
 <%= link_to 'Edit', edit_group_path(@group) %> |
