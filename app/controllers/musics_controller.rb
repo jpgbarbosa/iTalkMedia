@@ -1,6 +1,7 @@
 class MusicsController < ApplicationController
   require 'lastfm'
   require 'songkick'
+  require 'gmaps_geocoding'
   require 'ap'
   require 'extract'
 
@@ -53,17 +54,6 @@ class MusicsController < ApplicationController
       dataset.end()
     end
 
-    # c = SongKick.getEventsForArtist('Muse',nil,nil)
-    # if c["success"]
-    #   ap c["data"]
-    # else
-    #   ap c["message"]
-    # end
-
-    # puts "---------------------------------------------------------------------"
-    # c = LastFM.getTrack('Depeche Mode','Personal Jesus')
-    # ap c["data"]
-
     respond_to do |format|
       format.html # index.html.erb
       format.json { render :json => @musics }
@@ -73,7 +63,7 @@ class MusicsController < ApplicationController
   # GET /musics/1
   # GET /musics/1.json
   def show
-    @music = {name: "cenas"}
+    @music = {:name => "cenas"}
 
     respond_to do |format|
       format.html # show.html.erb
@@ -141,6 +131,7 @@ class MusicsController < ApplicationController
     
     ontology_ns = "http://musicontology.ws.dei.uc.pt/ontology.owl#"
     ns = "http://musicontology.ws.dei.uc.pt/music#"
+    place_ns = "http://musicontology.ws.dei.uc.pt/place#"
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory)
     
@@ -149,6 +140,7 @@ class MusicsController < ApplicationController
       model = dataset.get_default_model()
       model.set_ns_prefix("mo", ontology_ns)
       model.set_ns_prefix("item", ns)
+      model.set_ns_prefix("place", place_ns)
       
       # CLASSES #
 			ont_artist = ONTOLOGY.get_ont_class(ontology_ns+"Artist")
@@ -161,6 +153,7 @@ class MusicsController < ApplicationController
 			ont_musicalGroup = ONTOLOGY.get_ont_class(ontology_ns+"MusicalGroup")
 			ont_place = ONTOLOGY.get_ont_class(ontology_ns+"Place")
 			ont_track = ONTOLOGY.get_ont_class(ontology_ns+"Track")
+      puts ont_track
       
       # PROPERTIES #
 			ont_p_name = ONTOLOGY.get_property(ontology_ns+"name")
@@ -174,10 +167,14 @@ class MusicsController < ApplicationController
 			ont_p_hasTrack = ONTOLOGY.get_property(ontology_ns+"hasTrack")
       ont_p_hasCover = ONTOLOGY.get_property(ontology_ns+"hasCover")
       ont_p_hasBio = ONTOLOGY.get_property(ontology_ns+"hasBio")
+      ont_p_hasPerformance = ONTOLOGY.get_property(ontology_ns+"hasPerformance")
+      ont_p_hasConcert = ONTOLOGY.get_property(ontology_ns+"hasConcert")
 			ont_p_trackLength = ONTOLOGY.get_property(ontology_ns+"tracklength")
 			ont_p_inPlace = ONTOLOGY.get_property(ontology_ns+"inPlace")
 			ont_p_inCountry = ONTOLOGY.get_property(ontology_ns+"inCountry")
 			ont_p_inCity = ONTOLOGY.get_property(ontology_ns+"inCity")
+      ont_p_latitude = ONTOLOGY.get_property(ontology_ns+"latitude")
+      ont_p_longitude = ONTOLOGY.get_property(ontology_ns+"longitude")
       ont_p_placeFormed = ONTOLOGY.get_property(ontology_ns+"placeFormed")
       ont_p_isSimilarTo = ONTOLOGY.get_property(ontology_ns+"isSimilarTo")
       ont_p_isLastFMSimilar = ONTOLOGY.get_property(ontology_ns+"isLastFMSimilar")
@@ -188,6 +185,7 @@ class MusicsController < ApplicationController
 			ont_p_trackcount = ONTOLOGY.get_property(ontology_ns+"trackcount")
 			ont_p_date = ONTOLOGY.get_property(ontology_ns+"date")
 			ont_p_tracknum = ONTOLOGY.get_property(ontology_ns+"tracknum")
+      ont_p_songKickURL = ONTOLOGY.get_property(ontology_ns+"songKickURL")
       
       puts "---------\nSIZE: #{data_processed.length}\n--------"
       
@@ -225,6 +223,20 @@ class MusicsController < ApplicationController
           musical_group.add_property(ont_p_foundationYear, bio_info["formationlist"]["formation"]["yearto"])
         end
         
+        #- Geocoding Placeformed #
+        placeformed_info = GoogleMapsGeocoding.getPlaceInfo(bio_info["placeformed"])
+        if placeformed_info["success"]
+          placeformed_info=placeformed_info["data"]
+          placeformed = model.create_resource(place_ns+"#{placeformed_info[:lat]}-#{placeformed_info[:lng]}", ont_place)
+          placeformed_city = model.create_resource(place_ns+"#{placeformed_info[:city]}", ont_city)
+          placeformed_city.add_property(ont_p_name, placeformed_info[:city])
+          placeformed_country = model.create_resource(place_ns+"#{placeformed_info[:country]}", ont_country)
+          placeformed_country.add_property(ont_p_name, placeformed_info[:country])
+          placeformed.add_property(ont_p_inCity, placeformed_city).add_property(ont_p_inCountry, placeformed_country)
+          placeformed.add_property(ont_p_latitude, placeformed_info[:lat]).add_property(ont_p_longitude, placeformed_info[:lng])
+          musical_group.add_property(ont_p_placeFormed, placeformed)
+        end
+        
         #- LastFM Similar #
         similars = group_info["similar"]["artist"]
         similars.each do |s|
@@ -235,8 +247,7 @@ class MusicsController < ApplicationController
             sim.add_property(ont_p_isLastFMSimilar, musical_group)
           end
         end
-        
-        
+
         # ALBUM INFO #
         album_info = data[1]["album"]["data"]["album"]
 
@@ -244,7 +255,6 @@ class MusicsController < ApplicationController
         album.add_property(ont_p_name, data[0]["album"])
         album.add_property(ont_p_trackcount, album_info["tracks"].size)
         album.add_property(ont_p_lastFMURL, album_info["url"])
-        puts album_info["image"][-1]["#text"]
         album.add_property(ont_p_hasCover, album_info["image"][-1]["#text"]) #the biggest
         
         tags = album_info["toptags"]["tag"]
@@ -274,8 +284,41 @@ class MusicsController < ApplicationController
           tag_resource.add_property(ont_p_name, tag["name"])
           track.add_property(ont_p_genre, tag_resource)
         end
-        model.write(java.lang.System::out, "RDF/XML-ABBREV")
+        
         # EVENTS INFO #
+        if data[2]["events"]["success"] == true
+          events_info = data[2]["events"]["data"]["event"]
+
+          events_info.each do |e|
+            event = model.create_resource(ns+e["id"].to_s, ont_concert)
+            event.add_property(ont_p_hasPerformance, musical_group)
+            musical_group.add_property(ont_p_hasConcert, event)
+
+            event.add_property(ont_p_name, e["displayName"])
+            event.add_property(ont_p_songKickURL, e["uri"])
+            event.add_property(ont_p_date, e["start"]["date"])
+
+            place = model.create_resource(place_ns+"#{e["venue"]["id"].to_s}", ont_place)
+            place.add_property(ont_p_name, e["venue"]["displayName"])
+            place.add_property(ont_p_latitude, e["location"]["lat"])
+            place.add_property(ont_p_longitude, e["location"]["lng"])
+
+            city, country = e["location"]["city"].split(",")
+            city.strip!
+            country.strip!
+            city_r = model.create_resource(place_ns+"#{country}-#{city}", ont_city)
+            city_r.add_property(ont_p_name, city)
+            country_r = model.create_resource(place_ns+"#{country}", ont_country)
+            country_r.add_property(ont_p_name, country)
+
+            place.add_property(ont_p_inCity, city_r)
+            place.add_property(ont_p_inCountry, country_r)
+            
+            event.add_property(ont_p_inPlace, place)
+          end
+        end
+        
+        model.write(java.lang.System::out, "RDF/XML-ABBREV")
       end
       
       
