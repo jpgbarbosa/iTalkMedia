@@ -28,6 +28,48 @@ java_import "com.hp.hpl.jena.rdf.model.Resource"
 class Music < ActiveRecord::Base
   attr_accessible :name, :path
 
+
+  	def self.jenaGetMusicInfo(id)
+
+  		#todo query
+  	end
+
+
+  	def self.jenaGetAllMusics()
+
+  		musics_array = []
+
+  		data = {}
+
+  		#TODO for each music get ingo and join artist and album name
+	    directory = "music_database"
+	    dataset = TDBFactory.create_dataset(directory);
+	    
+	    begin
+	      dataset.begin(ReadWrite::READ)
+	      query = "PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>" +
+						    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>" +
+						    "SELECT ?x ?a WHERE { ?x mo:hasCover ?a }"
+	      qExec = QueryExecutionFactory.create(query, dataset)
+	      rs = qExec.exec_select()
+	      ResultSetFormatter.out(rs)
+	    ensure
+	      dataset.end()
+	    end
+
+	    data[:artist] = "Muse"
+	    data[:album] = "2nd Law"
+	    data[:name] = "Panic Station"
+	    data[:genre] = ["Alt Rock"]
+	    data[:length] = "no idea :P"
+
+
+	    musics_array << data
+
+	    return musics_array
+
+  	end
+
  	def self.setJenaInfo(data_processed)
  		ontology_ns = "http://musicontology.ws.dei.uc.pt/ontology.owl#"
 	    ns = "http://musicontology.ws.dei.uc.pt/music#"
