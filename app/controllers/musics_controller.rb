@@ -37,22 +37,7 @@ class MusicsController < ApplicationController
   # GET /musics
   # GET /musics.json
   def index
-    @musics = Music.all
-
-    directory = "music_database"
-    dataset = TDBFactory.create_dataset(directory);
-    
-    begin
-      dataset.begin(ReadWrite::READ)
-      query = "PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>" +
-					    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>" +
-					    "SELECT ?x ?a WHERE { ?x mo:hasCover ?a }"
-      qExec = QueryExecutionFactory.create(query, dataset)
-      rs = qExec.exec_select()
-      ResultSetFormatter.out(rs)
-    ensure
-      dataset.end()
-    end
+    @musics = Music.get_all
 
     respond_to do |format|
       format.html # index.html.erb
