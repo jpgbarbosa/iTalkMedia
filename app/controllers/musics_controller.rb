@@ -51,11 +51,11 @@ class MusicsController < ApplicationController
   # GET /musics/1
   # GET /musics/1.json
   def show
-    if params[:id]!=nil && params[:id_no]!=nil
-      id_link = "http://musicontology.ws.dei.uc.pt/"+params[:id]+"#"+params[:id_no]
+    if params[:id]!=nil
+      id_link = "http://musicontology.ws.dei.uc.pt/music##{params[:id]}"
       
       puts id_link
-      @music = {:name => "cenas"}
+      @music = Music.get_by_id(params[:id])
     else
       @music = {:name => "deu erro", :error => "params not valid"}
     end

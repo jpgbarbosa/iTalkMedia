@@ -14,11 +14,13 @@
       <div class="accordion-inner">
         <dl class="dl-horizontal">
           <dt><strong>Name:</strong></dt>
-          <dd><%= @music["name"] %></dd>
+          <dd><%= @music[:name] %></dd>
           <dt><strong>Artist:</strong></dt>
-          <dd><%= @music["name"] %></dd>
+          <dd><%= @music[:artist] %></dd>
+          <dt><strong>Album:</strong></dt>
+          <dd><%= @music[:album] %></dd>
           <dt><strong>Year:</strong></dt>
-          <dd><%= @music["name"] %></dd>
+          <dd><%= @music[:year] %></dd>
         </dl>
       </div>
     </div>
@@ -35,13 +37,13 @@
         <dl class="dl-horizontal">
 
           <dt><strong>Length:</strong></dt>
-          <dd><%= @music["name"] %></dd>
+          <dd><%= @music[:length] %></dd>
           <dt><strong>Number:</strong></dt>
-          <dd><%= @music["name"] %></dd>
+          <dd><%= @music[:num] %></dd>
           <dt><strong>Genre:</strong></dt>
-          <dd><%= @music["name"] %></dd>
+          <dd><%= @music[:genres].join(", ") %></dd>
           <dt><strong>Bitrate:</strong></dt>
-          <dd><%= @music["name"] %></dd>
+          <dd><%= @music[:bitrate] %></dd>
 
         </dl>
       </div>
@@ -57,11 +59,8 @@
     <div id="collapseThree" class="accordion-body collapse">
       <div class="accordion-inner">
         <dl class="dl-horizontal">
-
-          ceeeenas ceeenas cenas ceeeenas !
-
-        </dl>
-
+			<%= @music[:lyric] %>
+		</dl>
       </div>
     </div>
   </div>

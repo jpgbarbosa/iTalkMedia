@@ -26,11 +26,8 @@
         <td><%= music[:length] %></td>
         <td>
           <!-- MARTELANCO WARNING :P -->
-          <% link = "/musics/"+music[:id].to_s.split('/').last %>
-          <% id_no = link.split('#').last %>
-          <% base = link.split('#').first %>
           <%= link_to t('.show', :default => t("helpers.links.show")),
-                      base+'?id_no='+id_no, :class => 'btn btn-mini btn-primary' %> 
+                      "musics/#{music[:id]}", :class => 'btn btn-mini btn-primary' %> 
           <%= link_to t('.edit', :default => t("helpers.links.edit")),
                       "edit_music_path(music)", :class => 'btn btn-mini' %>
           <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
