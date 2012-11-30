@@ -15,6 +15,7 @@ require 'java'
 
 java_import "com.hp.hpl.jena.query.Dataset"
 java_import "com.hp.hpl.jena.query.QueryExecution"
+java_import "com.hp.hpl.jena.query.QueryFactory"
 java_import "com.hp.hpl.jena.query.QueryExecutionFactory"
 java_import "com.hp.hpl.jena.query.ReadWrite"
 java_import "com.hp.hpl.jena.query.ResultSet"
@@ -40,47 +41,59 @@ class Music < ActiveRecord::Base
     
       musics = []
     
+    	#TODO get album and artist name
       begin
         dataset.begin(ReadWrite::READ)
-        query = "PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#> " +
-  					    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
-  					    "SELECT ?track_id ?track_name ?track_bitrate ?genre_name ?track_lyric ?track_length ?track_num ?track_year WHERE {"+
-                  "?track_id rdf:type mo:Track ; "+
-                  " mo:name ?track_name ; "+
-                  " mo:bitrate ?track_bitrate ; "+
-                  " mo:genre ?genre ; "+
-                  " mo:tracklength ?track_length ; "+
-                  " mo:tracknum ?track_num ; "+
-                  " mo:year ?track_year . "+
-                  "?genre rdf:type mo:Genre ; "+
-                  " mo:name ?genre_name ."+
-                  " OPTIONAL { ?track_id mo:hasLyric ?track_lyric . } ."+
-                "} ORDER BY ?track_id"
-                puts query
-        qExec = QueryExecutionFactory.create(query, dataset)
-        rs = qExec.exec_select()
-        ResultSetFormatter.out(rs)
+        query = %q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#> 
+  					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+  					    SELECT ?track_id ?track_name ?track_bitrate ?genre_name ?track_lyric ?track_length ?track_num ?track_year WHERE {
+		                  ?track_id rdf:type mo:Track ; 
+		                  mo:name ?track_name ; 
+		                  mo:bitrate ?track_bitrate ;
+		                  mo:genre ?genre ; 
+		                  mo:tracklength ?track_length ; 
+		                  mo:tracknum ?track_num ; 
+		                  mo:year ?track_year . 
+		                  ?genre rdf:type mo:Genre ; 
+		                  mo:name ?genre_name .
+		                  OPTIONAL { ?track_id mo:hasLyric ?track_lyric . } .
+		                } ORDER BY ?track_id)
+        
+        query = QueryFactory.create(query)
+
+        qexec = QueryExecutionFactory.create(query, dataset)
+        rs = qexec.exec_select
+        #ResultSetFormatter.out(rs)
       
         id = ""
         genres = []
+        #ap rs
         while rs.has_next
           music = {}
           qs = rs.next
-          if qs.get("?track_id") == id
-            genres << qs.get("?genre_name")
-          else
-            music[:id] = qs.get("?track_id")
-            music[:name] = qs.get("?track_name")
-            music[:bitrate] = qs.get("?track_bitrate")
-            music[:length] = qs.get("?track_length")
-            music[:num] = qs.get("?track_num")
-            music[:year] = qs.get("?track_year")
-            genres = []
-            music[:genres] = genres
-            genres << qs.get("?genre_name")
-          end
 
-          musics << music
+	        music[:id] = qs.get("track_id")
+	        music[:name] = qs.get("track_name").string.to_s
+	        music[:bitrate] = qs.get("track_bitrate").string.to_s
+	        music[:length] = qs.get("track_length").string.to_s
+	        music[:num] = qs.get("track_num").string.to_s
+	        music[:year] = qs.get("track_year").string.to_s
+
+	        if music[:length].to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil
+	        	music[:length] == "undefined"
+	        else
+	        	music[:length]= sprintf("%.2f",(music[:length].to_f / 60)).to_s+" mins"
+	        end
+	        
+	        #dunno como ler isto
+
+	        # qs.get("genre_name").each do |g|
+	        # 	genres << g.string
+	        # end
+          	
+	        music[:genre] = nil
+
+            musics << music
         end
       ensure
         dataset.end()

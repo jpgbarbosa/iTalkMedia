@@ -39,6 +39,9 @@ class MusicsController < ApplicationController
   def index
     @musics = Music.jenaGetAllMusics()
 
+    puts "hhhhhhhhhheeeeeeererereere"
+    ap @musics
+
     respond_to do |format|
       format.html # index.html.erb
       format.json { render :json => @musics }
@@ -48,7 +51,15 @@ class MusicsController < ApplicationController
   # GET /musics/1
   # GET /musics/1.json
   def show
-    @music = {:name => "cenas"}
+    if params[:id]!=nil && params[:id_no]!=nil
+      id_link = "http://musicontology.ws.dei.uc.pt/"+params[:id]+"#"+params[:id_no]
+      
+      puts id_link
+      @music = {:name => "cenas"}
+    else
+      @music = {:name => "deu erro", :error => "params not valid"}
+    end
+
 
     respond_to do |format|
       format.html # show.html.erb
