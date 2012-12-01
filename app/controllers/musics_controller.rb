@@ -38,11 +38,7 @@ class MusicsController < ApplicationController
   # GET /musics.json
   def index
     @musics = Music.get_all()
-
-    puts params[:id]
-    puts params[:fromalbum]
-
-    ap @musics
+    #ap @musics
 
     respond_to do |format|
       format.html # index.html.erb
