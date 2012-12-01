@@ -1,4 +1,6 @@
 ITalkMedia::Application.routes.draw do
+  resources :albums
+
   resources :groups
 
   resources :musics

@@ -39,6 +39,9 @@ class MusicsController < ApplicationController
   def index
     @musics = Music.get_all()
 
+    puts params[:id]
+    puts params[:fromalbum]
+
     ap @musics
 
     respond_to do |format|

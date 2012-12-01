@@ -109,7 +109,7 @@
                 <tr>  
                   <td><%=ctr%></td>
                   <td><img width="60" height="60" src=<%=g[:cover]%> class="img-rounded"></td> <!-- Dont show to guilherme-->
-                  <td><%=g[:name]%></td>
+                  <td><%= link_to g[:name], "/albums/"+g[:id] %></td>
                 </tr>
                 <% ctr+=1 %>
               <%end%>
