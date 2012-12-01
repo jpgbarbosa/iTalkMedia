@@ -60,7 +60,7 @@
               <% @group[:members].each do |g| %>
                 <tr> 
                   <td><%=ctr%></td>
-                  <td><%=g%></td>
+                  <td><%=g[:name]%></td>
                 </tr>
                 <% ctr+=1 %>
               <%end%>

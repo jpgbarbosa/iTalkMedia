@@ -262,6 +262,7 @@ class Music < ActiveRecord::Base
           member_resource = model.create_resource(ns+group_info["name"]+"/"+member["name"], ont_artist)
           member_resource.add_property(ont_p_name, member["name"])
           musical_group.add_property(ont_p_hasArtist, member_resource)
+          member_resource.add_property(ont_p_musicalGroup, musical_group)
         end
 	        
         tags = group_info["tags"]["tag"]

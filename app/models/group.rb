@@ -84,6 +84,8 @@ class Group < ActiveRecord::Base
       ap band[:albums]
       band[:concerts] = get_concerts(band[:id])
       ap band[:concerts]
+      band[:members] = get_members(band[:id])
+      ap band[:members]
       #band[:similar] = get_lastfm_similar(band[:id])
         
       #band[:lastfm_similar] = get_similar(band[:id])
@@ -146,6 +148,8 @@ class Group < ActiveRecord::Base
         ap band[:albums]
         band[:concerts] = get_concerts(band[:id])
         ap band[:concerts]
+        band[:members] = get_members(band[:id])
+        ap band[:members]
         #band[:similar] = get_lastfm_similar(band[:id])
         
         #band[:lastfm_similar] = get_similar(band[:id])
@@ -185,7 +189,7 @@ class Group < ActiveRecord::Base
 
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
-      #ResultSetFormatter.out(rs)
+
       if rs.has_next
         qs = rs.next
         place = {
@@ -313,7 +317,50 @@ class Group < ActiveRecord::Base
     end
   end
   
+  def self.get_members(id)
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory)
+
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+					    SELECT ?artist ?name
+              WHERE {
+	                  <#{id}> rdf:type mo:MusicalGroup ;
+                      mo:hasArtist ?artist .
+                    ?artist rdf:type mo:Artist ;
+                      mo:name ?name .
+              })
+
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+
+      if !rs.has_next
+        return nil
+      end
+      
+      members = []
+      while rs.has_next
+        qs = rs.next
+        
+        member = {}
+        member[:id] = qs.get("artist").get_uri.to_s.split("#").last
+        member[:name] = qs.get("name").string.to_s
+        
+        members << member
+      end
+      
+      return members
+    ensure
+      dataset.end()
+    end
+  end
+  
   def self.get_lastfm_similar(id)
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
@@ -321,17 +368,18 @@ class Group < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-					    SELECT ?lat ?lng ?city_name ?country_name
+					    SELECT ?similar ?name ?bio ?cover ?lastFMURL ?foundation_year ?place_formed_id ?end_year
               WHERE {
-	                  <#{place_id}> rdf:type mo:Place ;
-                      mo:inCity ?city ;
-                      mo:inCountry ?country ;
-                      mo:latitude ?lat ;
-                      mo:longitude ?lng .
-                    ?city rdf:type mo:City ;
-                      mo:name ?city_name .
-                    ?country rdf:type mo:Country ;
-                      mo:name ?country_name .
+	                  <#{id}> rdf:type mo:MusicalArtist ;
+                      mo:isLastFMSimilar ?similar .
+                    ?similar rdf:type mo:MusicalArtist ;
+                      mo:name ?name ;
+                      mo:hasBio ?bio ;
+                      mo:hasCover ?cover ;
+                      mo:lastFMURL ?lastFMURL ;
+                      mo:foundationYear ?foundation_year ;
+                      mo:placeFormed ?place_formed_id .
+	                  OPTIONAL { ?similar mo:endYear ?end_year . } .
               })
 
       query = QueryFactory.create(query)
@@ -339,12 +387,34 @@ class Group < ActiveRecord::Base
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
       
+      if !rs.has_next
+        return nil
+      end
+      
+      similars = []
+      while rs.has_next
+        qs = rs.next
+        
+        similar = {}
+        similar[:id] = qs.get("similar").get_uri.to_s.split("#").last
+        similar[:name] = qs.get("name").string.to_s
+        similar[:bio] = qs.get("bio").string.to_s
+        similar[:cover] = qs.get("cover").string.to_s
+        similar[:lastFMURL] = qs.get("lastFMURL").string.to_s
+        similar[:foundation_year] = qs.get("foundation_year").to_s
+        similar[:end_year] = qs.get("end_year").to_s
+        
+        similars << similar
+      end
+      
+      return similars
     ensure
       dataset.end()
     end
   end
   
   def self.get_similar(id)
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
@@ -352,17 +422,18 @@ class Group < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-					    SELECT ?lat ?lng ?city_name ?country_name
+					    SELECT ?similar ?name ?bio ?cover ?lastFMURL ?foundation_year ?place_formed_id ?end_year
               WHERE {
-	                  <#{place_id}> rdf:type mo:Place ;
-                      mo:inCity ?city ;
-                      mo:inCountry ?country ;
-                      mo:latitude ?lat ;
-                      mo:longitude ?lng .
-                    ?city rdf:type mo:City ;
-                      mo:name ?city_name .
-                    ?country rdf:type mo:Country ;
-                      mo:name ?country_name .
+	                  <#{id}> rdf:type mo:MusicalArtist ;
+                      mo:isSimilar ?similar .
+                    ?similar rdf:type mo:MusicalArtist ;
+                      mo:name ?name ;
+                      mo:hasBio ?bio ;
+                      mo:hasCover ?cover ;
+                      mo:lastFMURL ?lastFMURL ;
+                      mo:foundationYear ?foundation_year ;
+                      mo:placeFormed ?place_formed_id .
+	                  OPTIONAL { ?similar mo:endYear ?end_year . } .
               })
 
       query = QueryFactory.create(query)
@@ -370,7 +441,27 @@ class Group < ActiveRecord::Base
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
       
+      if !rs.has_next
+        return nil
+      end
       
+      similars = []
+      while rs.has_next
+        qs = rs.next
+        
+        similar = {}
+        similar[:id] = qs.get("similar").get_uri.to_s.split("#").last
+        similar[:name] = qs.get("name").string.to_s
+        similar[:bio] = qs.get("bio").string.to_s
+        similar[:cover] = qs.get("cover").string.to_s
+        similar[:lastFMURL] = qs.get("lastFMURL").string.to_s
+        similar[:foundation_year] = qs.get("foundation_year").to_s
+        similar[:end_year] = qs.get("end_year").to_s
+        
+        similars << similar
+      end
+      
+      return similars
     ensure
       dataset.end()
     end
