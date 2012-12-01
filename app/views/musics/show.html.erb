@@ -41,7 +41,17 @@
           <dt><strong>Number:</strong></dt>
           <dd><%= @music[:num] %></dd>
           <dt><strong>Genre:</strong></dt>
-          <dd><%= @music[:genres].join(", ") %></dd>
+          <dd>
+              <%if @music[:genres] != nil && @music[:genres].length > 0 %>
+                <% @music[:genres].each do |g| %>
+                  <% if g.to_s.casecmp(@music[:artist].to_s) != 0 %>
+                    <%= g.to_s%><%=", "%>
+                  <%end%>
+                <%end%>
+              <%else%>
+                undefined
+              <%end%>
+          </dd>
           <dt><strong>Bitrate:</strong></dt>
           <dd><%= @music[:bitrate] %></dd>
 

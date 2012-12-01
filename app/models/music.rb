@@ -39,19 +39,16 @@ class Music < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       query = %q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#> 
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-					    SELECT ?track_id ?track_name ?track_bitrate ?genre_name ?track_lyric ?track_length ?track_num ?track_year ?album ?album_name ?band ?band_name
+					    SELECT ?track_id ?track_name ?track_bitrate ?track_lyric ?track_length ?track_num ?track_year ?album ?album_name ?band ?band_name
               WHERE {
 	                  ?track_id rdf:type mo:Track ; 
 	                    mo:name ?track_name ; 
 	                    mo:bitrate ?track_bitrate ;
-	                    mo:genre ?genre ; 
 	                    mo:tracklength ?track_length ; 
 	                    mo:tracknum ?track_num ; 
 	                    mo:year ?track_year ;
                       mo:musicalgroup ?band ;
                       mo:inAlbum ?album .
-	                  ?genre rdf:type mo:Genre ; 
-	                    mo:name ?genre_name .
                     ?band rdf:type mo:MusicalGroup ;
                       mo:name ?band_name .
                     ?album rdf:type mo:Album ;
@@ -63,11 +60,9 @@ class Music < ActiveRecord::Base
 
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
-      #ResultSetFormatter.out(rs)
       
-      id = ""
       genres = []
-      #ap rs
+
       while rs.has_next
         music = {}
         qs = rs.next
@@ -88,17 +83,14 @@ class Music < ActiveRecord::Base
         else
         	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60)} mins"
         end
-	        
-        #dunno como ler isto
 
-        # qs.get("genre_name").each do |g|
-        # 	genres << g.string
-        # end
-          	
-        music[:genre] = nil
-        ap music
+        #Read genres aside
+        music[:genres] = get_genres(music[:id])
+
+        ap music[:genres]
 
         musics << music
+
       end
     ensure
       dataset.end()
@@ -165,22 +157,56 @@ class Music < ActiveRecord::Base
         end
         
         puts "lyric #{qs.get("track_lyric")}"
-        
 
-        music[:genres] = []
-        music[:genres] << qs.get("genre_name").string.to_s
-        
-        while rs.has_next #more genres
-          qs = rs.next
-          music[:genres] << qs.get("genre_name").string.to_s
-        end
+        music[:genres] = get_genres(id)
       end
-      
+
       return music
     ensure
       dataset.end()
     end
   end
+
+
+  def self.get_genres(id)
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory)
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+              PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              SELECT ?genre_name
+              WHERE {
+                    <#{ns+id}> rdf:type mo:Track ;
+                    mo:genre ?genre .
+                    ?genre rdf:type mo:Genre ; 
+                      mo:name ?genre_name .
+              })
+
+      query = QueryFactory.create(query)
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      
+      if !rs.has_next
+        return nil
+      end
+      
+      genres = []
+      while rs.has_next
+        qs = rs.next
+
+        genres << qs.get("genre_name").string.to_s
+
+      end
+
+      return genres
+    ensure
+      dataset.end()
+    end
+  end
+
 
  	def self.setJenaInfo(data_processed)
  		ontology_ns = "http://musicontology.ws.dei.uc.pt/ontology.owl#"
@@ -256,13 +282,14 @@ class Music < ActiveRecord::Base
         musical_group.add_property(ont_p_name, data[0]["artist"])
         musical_group.add_property(ont_p_lastFMURL, group_info["url"])
         musical_group.add_property(ont_p_hasCover, group_info["image"][-1]["#text"]) #the biggest
-	        
-        members = group_info["bandmembers"]["member"]
-        members.each do |member|
-          member_resource = model.create_resource(ns+group_info["name"]+"/"+member["name"], ont_artist)
-          member_resource.add_property(ont_p_name, member["name"])
-          musical_group.add_property(ont_p_hasArtist, member_resource)
-          member_resource.add_property(ont_p_musicalGroup, musical_group)
+
+        if (members = getSafeField(group_info,["bandmembers","member"]))!=nil
+          members.each do |member|
+            member_resource = model.create_resource(ns+group_info["name"]+"/"+member["name"], ont_artist)
+            member_resource.add_property(ont_p_name, member["name"])
+            musical_group.add_property(ont_p_hasArtist, member_resource)
+            member_resource.add_property(ont_p_musicalGroup, musical_group)
+          end
         end
 	        
         tags = group_info["tags"]["tag"]
@@ -313,11 +340,12 @@ class Music < ActiveRecord::Base
         album.add_property(ont_p_lastFMURL, album_info["url"])
         album.add_property(ont_p_hasCover, album_info["image"][-1]["#text"]) #the biggest
 	        
-        tags = album_info["toptags"]["tag"]
-        tags.each do |tag|
-          tag_resource = model.create_resource(tag["url"], ont_genre)
-          tag_resource.add_property(ont_p_name, tag["name"])
-          album.add_property(ont_p_genre, tag_resource)
+        if (tags = getSafeField(group_info,["toptags","tag"]))!=nil
+          tags.each do |tag|
+            tag_resource = model.create_resource(tag["url"], ont_genre)
+            tag_resource.add_property(ont_p_name, tag["name"])
+            album.add_property(ont_p_genre, tag_resource)
+          end
         end
 
         musical_group.add_property(ont_p_hasAlbum, album)
@@ -388,4 +416,22 @@ class Music < ActiveRecord::Base
       dataset.end()
     end
 	end
+
+  def self.getSafeField(base, fields=[])
+
+    hash = base
+
+    begin
+      fields.each do |f|
+
+        hash = hash[f]
+      end
+
+      return hash
+    rescue
+      return nil
+    end
+
+  end
+
 end

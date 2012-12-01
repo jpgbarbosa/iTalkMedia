@@ -120,9 +120,7 @@ class MusicsController < ApplicationController
                         "size" => upload.size }
     end
 
-
-    # WS processing
-    # data_processed
+    #ap data_processed
     Music.setJenaInfo(data_processed)
 
     #redirect_to @music, 

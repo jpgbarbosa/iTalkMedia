@@ -16,13 +16,14 @@
       <tr>
         <td><%= music[:name] %></td>
         <td><%= music[:album] %></td>
-		<td><%= music[:artist] %></td>
-        <% if music[:genre]!=nil && music[:genre].length > 0 %>
-                <td><%= music[:genre][0] %></td>
-            <%else%>
-                <td> undefined </td>
-            <%end%>
-        
+		    <td><%= music[:artist] %></td>
+        <td>
+          <% if music[:genres]!=nil && music[:genres].length > 0 %>
+            <%= music[:genres][0] %>
+          <%else%>
+            undefined
+          <%end%>
+        </td>
         <td><%= music[:length] %></td>
         <td>
           <!-- MARTELANCO WARNING :P -->
@@ -35,7 +36,7 @@
                       :method => :delete,
                       :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
                       :class => 'btn btn-mini btn-danger' %>
-                  </td>
+        </td>
       </tr>
     <% end %>
   </tbody>
