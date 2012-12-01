@@ -14,23 +14,25 @@
           <dt><strong>Name:</strong></dt>
           <dd><%= @group[:name] %></dd>
           <dt><strong>Genre:</strong></dt>
-          <% g_genres ="" %>
-		  <% if @group[:genre] != nil %>
-         	 <% @group[:genre].each do |g| %>
-          	 <% g_genres << g << " " %>
-          	<%end%>
-		  <%end%>
-          <dd><%= g_genres %></dd>
+          <dd>
+      		  <% if @group[:genre] != nil %>
+               	 <% @group[:genre].each do |g| %>
+                	 <%= g%><%= ", " %>
+                	<%end%>
+            <%else%>
+              undefined
+      		  <%end%>
+          </dd>
           <dt><strong>Foundation Year:</strong></dt>
           <dd><%= @group[:foundation_year] %></dd>
-
-          <% if @group[:end_year] != nil %>
+          <% if @group[:end_year]!=""%>
             <dt><strong>End Year:</strong></dt>
             <dd><%= @group[:endYear] %></dd>
           <% end %>
           <% if @group[:placeformed] != nil %>
             <dt><strong>From:</strong></dt>
-            <dd><%= @group[:placeformed] %></dd>
+            <dd><%= link_to @group[:placeformed][:city].to_s<<", "<< @group[:placeformed][:country].to_s, "gmaps dir" %></dd>
+            
           <% end %>
           </br>
           <dd><%= link_to 'LastFM Profile', @group[:lastFMURL]%></dd>
@@ -97,15 +99,17 @@
             <thead>
               <tr> 
                 <th>#</th>
+                <th>Cover</th>
                 <th>Name</th>
               </tr>
-            <thead>
+            </thead>
             <tbody>
               <% ctr = 1 %>
               <% @group[:albums].each do |g| %>
-                <tr> 
+                <tr>  
                   <td><%=ctr%></td>
-                  <td><%=g%></td>
+                  <td><img width="60" height="60" src=<%=g[:cover]%> class="img-rounded"></td>
+                  <td><%=g[:name]%></td>
                 </tr>
                 <% ctr+=1 %>
               <%end%>
@@ -133,7 +137,6 @@
                 <th>City</th>
                 <th>Country</th>
                 <th></th> <!-- map -->
-
               </tr>
             <thead>
             <tbody>
