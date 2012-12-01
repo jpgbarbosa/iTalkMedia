@@ -37,9 +37,8 @@ class MusicsController < ApplicationController
   # GET /musics
   # GET /musics.json
   def index
-    @musics = Music.jenaGetAllMusics()
+    @musics = Music.get_all()
 
-    puts "hhhhhhhhhheeeeeeererereere"
     ap @musics
 
     respond_to do |format|

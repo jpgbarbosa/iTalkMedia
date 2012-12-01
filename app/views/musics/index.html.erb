@@ -4,9 +4,9 @@
 <table class="table table-striped">
   <thead>
     <tr>
-      <th>Artist</th>
+	  <th>Music</th>
       <th>Album</th>
-      <th>Music</th>
+      <th>Artist</th>
       <th>Genre</th>
       <th>Length</th>
     </tr>
@@ -14,9 +14,9 @@
   <tbody>
     <% @musics.each do |music| %>
       <tr>
-        <td><%= music[:artist] %></td>
-        <td><%= music[:album] %></td>
         <td><%= music[:name] %></td>
+        <td><%= music[:album] %></td>
+		<td><%= music[:artist] %></td>
         <% if music[:genre]!=nil && music[:genre].length > 0 %>
                 <td><%= music[:genre][0] %></td>
             <%else%>

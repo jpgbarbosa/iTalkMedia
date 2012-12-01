@@ -24,12 +24,12 @@
                 <td> undefined </td>
             <%end%>
              <!-- getting first one only -->
-            <td><%= group[:foundationYear] %></td>
-            <td><%= link_to 'lastFM', group[:lastfmUrl] %></td>
+            <td><%= group[:foundation_year] %></td>
+            <td><%= link_to 'lastFM', group[:lastFMURL] %></td>
 
-            <td><%= link_to 'Show', group %></td>
+            <td><%= link_to 'Show', "/groups/#{group[:id]}" %></td>
             <td><%= link_to 'Edit', "edit_group_path(group)" %></td>
-            <td><%= link_to 'Destroy', group, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+            <td><%= link_to 'Destroy', group, :method => :delete, :data => { :confirm => 'Are you sure?' } %></td>
           </tr>
         <% end %>
     </tbody>

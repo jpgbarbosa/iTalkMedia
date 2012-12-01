@@ -29,20 +29,13 @@ java_import "com.hp.hpl.jena.rdf.model.Resource"
 class Music < ActiveRecord::Base
   attr_accessible :name, :path
 
-	def self.jenaGetMusicInfo(id)
-
-		#todo query
-	end
-
-
-	def self.jenaGetAllMusics()
+	def self.get_all()
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
     musics = []
     
-  	#TODO get album and artist name
-    begin
+  	begin
       dataset.begin(ReadWrite::READ)
       query = %q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#> 
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 

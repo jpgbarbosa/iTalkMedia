@@ -15,23 +15,25 @@
           <dd><%= @group[:name] %></dd>
           <dt><strong>Genre:</strong></dt>
           <% g_genres ="" %>
-          <% @group[:genre].each do |g| %>
-            <% g_genres << g << " " %>
-          <%end%>
+		  <% if @group[:genre] != nil %>
+         	 <% @group[:genre].each do |g| %>
+          	 <% g_genres << g << " " %>
+          	<%end%>
+		  <%end%>
           <dd><%= g_genres %></dd>
           <dt><strong>Foundation Year:</strong></dt>
-          <dd><%= @group[:foundationYear] %></dd>
+          <dd><%= @group[:foundation_year] %></dd>
 
-          <% if @group[:endYear] != nil %>
+          <% if @group[:end_year] != nil %>
             <dt><strong>End Year:</strong></dt>
             <dd><%= @group[:endYear] %></dd>
           <% end %>
-          <% if @group[:place_formed] != nil %>
+          <% if @group[:placeformed] != nil %>
             <dt><strong>From:</strong></dt>
-            <dd><%= @group[:place_formed] %></dd>
+            <dd><%= @group[:placeformed] %></dd>
           <% end %>
           </br>
-          <dd><%= link_to 'LastFM Profile', @group[:lastfmUrl]%></dd>
+          <dd><%= link_to 'LastFM Profile', @group[:lastFMURL]%></dd>
         </dl>
       </div>
     </div>
@@ -54,6 +56,7 @@
             <thead>
             <tbody>
               <% ctr = 1 %>
+			  <% if @group[:members]!=nil %>
               <% @group[:members].each do |g| %>
                 <tr> 
                   <td><%=ctr%></td>
@@ -61,6 +64,7 @@
                 </tr>
                 <% ctr+=1 %>
               <%end%>
+			  <%end%>
             </tbody>
 
           </table>
@@ -98,7 +102,7 @@
             <thead>
             <tbody>
               <% ctr = 1 %>
-              <% @group[:albuns].each do |g| %>
+              <% @group[:albums].each do |g| %>
                 <tr> 
                   <td><%=ctr%></td>
                   <td><%=g%></td>
@@ -134,7 +138,7 @@
             <thead>
             <tbody>
               <% ctr = 1 %>
-              <% @group[:next_concerts].each do |g| %>
+              <% @group[:concerts].each do |g| %>
                 <tr> 
                   <td><%= ctr %></td>
                   <td><%= g[:name] %></td>
