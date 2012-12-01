@@ -82,7 +82,7 @@
     </div>
     <div id="collapseTwo" class="accordion-body collapse">
       <div class="accordion-inner">
-          <dd><%= @group[:bio] %></dd>
+          <dd><%= @group[:bio].html_safe %></dd>
       </div>
     </div>
   </div>
@@ -108,7 +108,7 @@
               <% @group[:albums].each do |g| %>
                 <tr>  
                   <td><%=ctr%></td>
-                  <td><img width="60" height="60" src=<%=g[:cover]%> class="img-rounded"></td>
+                  <td><img width="60" height="60" src=<%=g[:cover]%> class="img-rounded"></td> <!-- Dont show to guilherme-->
                   <td><%=g[:name]%></td>
                 </tr>
                 <% ctr+=1 %>
