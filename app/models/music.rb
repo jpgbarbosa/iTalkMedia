@@ -10,7 +10,9 @@ require 'lib/jar/javalib/xercesImpl-2.10.0.jar'
 require 'lib/jar/javalib/jena-arq-2.9.3.jar'
 require 'lib/jar/javalib/log4j-1.2.16.jar'
 require 'lib/jar/javalib/xml-apis-1.4.01.jar'
+
 require 'musicbrainz'
+require 'date'
 
 require 'java'
 
@@ -341,13 +343,17 @@ class Music < ActiveRecord::Base
         album.add_property(ont_p_trackcount, album_info["tracks"].size)
         album.add_property(ont_p_lastFMURL, album_info["url"])
         album.add_property(ont_p_hasCover, album_info["image"][-1]["#text"]) #the biggest
-	        
+
         if (tags = getSafeField(album_info,["toptags","tag"]))!=nil
           tags.each do |tag|
             tag_resource = model.create_resource(tag["url"], ont_genre)
             tag_resource.add_property(ont_p_name, tag["name"])
             album.add_property(ont_p_genre, tag_resource)
           end
+        end
+        
+        if album_info["releasedate"]!=nil || album_info["releasedate"]!=""
+          album.add_property(ont_p_date, Date.parse(album_info["releasedate"]).to_s)
         end
 
         musical_group.add_property(ont_p_hasAlbum, album)

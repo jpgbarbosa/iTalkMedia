@@ -12,6 +12,7 @@ require 'lib/jar/javalib/log4j-1.2.16.jar'
 require 'lib/jar/javalib/xml-apis-1.4.01.jar'
 
 require 'java'
+require 'date'
 
 java_import "com.hp.hpl.jena.query.Dataset"
 java_import "com.hp.hpl.jena.query.QueryExecution"
@@ -38,12 +39,13 @@ class Album < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-					    SELECT ?name ?trackcount ?cover ?band ?band_name
+					    SELECT ?name ?trackcount ?cover ?band ?band_name ?date
               WHERE {
 	                  <#{ns+id}> rdf:type mo:Album ;
                       mo:name ?name ;
                       mo:trackcount ?trackcount ;
                       mo:hasCover ?cover ;
+                      mo:date ?date ;
                       mo:musicalgroup ?band .
                     ?band rdf:type mo:MusicalGroup ;
                       mo:name ?band_name .
@@ -67,9 +69,9 @@ class Album < ActiveRecord::Base
       album[:cover] = qs.get("cover").string.to_s
       album[:artist] = qs.get("band_name").string.to_s
       album[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
+      album[:date] = Date.parse(qs.get("date").to_s).strftime("%-d %B %Y")
       
       album[:tracks] = get_musics_by_album(id)
-      ap album[:tracks]
       album[:genres] = get_genres(id)
       
       return album
@@ -87,12 +89,13 @@ class Album < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-					    SELECT ?album ?name ?trackcount ?cover ?band ?band_name
+					    SELECT ?album ?name ?trackcount ?cover ?band ?band_name ?date
               WHERE {
 	                  ?album rdf:type mo:Album ;
                       mo:name ?name ;
                       mo:trackcount ?trackcount ;
                       mo:hasCover ?cover ;
+                      mo:date ?date ;
                       mo:musicalgroup ?band .
                     ?band rdf:type mo:MusicalGroup ;
                       mo:name ?band_name .
@@ -118,6 +121,7 @@ class Album < ActiveRecord::Base
         album[:cover] = qs.get("cover").string.to_s
         album[:artist] = qs.get("band_name").string.to_s
         album[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
+        album[:date] = Date.parse(qs.get("date").to_s).strftime("%-d %B %Y")
         
         album[:tracks] = get_musics_by_album(album[:id])
         album[:genres] = get_genres(album[:id])
