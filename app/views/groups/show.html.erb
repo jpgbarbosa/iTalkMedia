@@ -1,5 +1,7 @@
 <p id="notice"><%= notice %></p>
 
+<script type="text/javascript"
+                src="http://maps.googleapis.com/maps/api/js?key=AIzaSyA-Tsf0tnUxwyk6mHC9HtJPWybdcrx25Qc&sensor=true"></script>
 
 <div class="accordion">
   <div class="accordion-group">
@@ -31,7 +33,11 @@
           <% end %>
           <% if @group[:placeformed] != nil %>
             <dt><strong>From:</strong></dt>
-            <dd><%= link_to @group[:placeformed][:city].to_s<<", "<< @group[:placeformed][:country].to_s, "gmaps dir" %></dd>
+            <dd> 
+              <a onclick="popupas(this)" lat="<%=@group[:placeformed][:lat]%>" lng="<%=@group[:placeformed][:lng]%>">
+                <%=@group[:placeformed][:city].to_s<<", "<< @group[:placeformed][:country].to_s%>
+              </a> 
+            </dd>
             
           <% end %>
           </br>
@@ -131,7 +137,7 @@
           <table class="table table-striped">
             <thead>
               <tr> 
-                <th>#</th>
+                <th style="width:90px">Date</th>
                 <th>Name</th>
                 <th>Venue</th>
                 <th>City</th>
@@ -143,12 +149,16 @@
               <% ctr = 1 %>
               <% @group[:concerts].each do |g| %>
                 <tr> 
-                  <td><%= ctr %></td>
-                  <td><%= g[:name] %></td>
+                  <td style="width:90px"><%= g[:date] %></td>
+                  <td><%= link_to g[:name], g[:songkick]  %></td>
                   <td><%= g[:venue] %></td>
                   <td><%= g[:city_name] %></td>
                   <td><%= g[:country_name] %></td>
-                  <td><%= link_to 'map', g[:coords] %></td> <!-- map -->
+                  <td>
+                    <a onclick="popupas(this)" lat="<%=g[:lat]%>" lng="<%=g[:lng]%>">
+                      map
+                    </a>    
+                  </td>
                 </tr>
                 <% ctr+=1 %>
               <%end%>
@@ -161,6 +171,60 @@
 
 
 </div>
+
+ 
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Map</h3>
+  </div>
+  <div id="map_canvas" class="modal-body">
+    
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>
+
+
+<style type="text/css">
+  #map_canvas { height: 330px; width: 100%; margin: 0px; padding: 0px }
+</style>
+
+<script type="text/javascript" charset="utf-8">
+
+
+var popupas = function(id) {
+
+
+  var center = new google.maps.LatLng($(id).attr('lat'),$(id).attr('lng'));
+    var mapOptions = {
+        center : center,
+        zoom : 16,
+        mapTypeId : google.maps.MapTypeId.HYBRID
+    };
+
+    var map = new google.maps.Map(document.getElementById("map_canvas"),
+            mapOptions);
+
+    var markerOptions = {
+        position : new google.maps.LatLng($(id).attr('lat'),$(id).attr('lng')),
+        map : map
+    };
+
+    var marker = new google.maps.Marker(markerOptions);
+
+    $("#map_canvas").on('load',function(){
+      alert("skdjfhsdjhf")
+      google.maps.event.trigger(map,'resize');
+      map.setCenter(new google.maps.LatLng($(id).attr('lat'),$(id).attr('lng')));
+    });
+
+
+    $('#myModal').modal('toggle')
+
+}
+</script
 
 
 

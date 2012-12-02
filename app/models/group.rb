@@ -302,8 +302,8 @@ class Group < ActiveRecord::Base
         concert[:name] = qs.get("name").string.to_s
         concert[:date] = qs.get("date").to_s
         concert[:songkick] = qs.get("songkick").string.to_s
-        concert[:lat] = qs.get("lat").to_s
-        concert[:lng] = qs.get("lng").to_s
+        concert[:lat] = qs.get("lat").float.to_s
+        concert[:lng] = qs.get("lng").float.to_s
         concert[:city_name] = qs.get("city_name").string.to_s
         concert[:country_name] = qs.get("country_name").string.to_s
         concert[:venue] = qs.get("venue").string.to_s

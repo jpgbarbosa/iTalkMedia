@@ -23,8 +23,8 @@
               undefined
       		  <%end%>
           </dd>
-          <dt><strong>Year:</strong></dt>
-          <dd><%= @album[:fear] %></dd>
+          <dt><strong>Release Year:</strong></dt>
+          <dd><%= @album[:tracks][0][:year] %></dd>
         </dl>
       </div>
     </div>
@@ -53,8 +53,8 @@
 		    <% @album[:tracks].each do |music| %>
 		      <tr>
 		        <td><%= music[:name] %></td>
-		        <td><%= music[:album] %></td>
-				    <td><%= music[:artist] %></td>
+		        <td><%= @album[:name] %></td>
+				    <td><%= @album[:artist] %></td>
 		        <td>
 		          <% if music[:genres]!=nil && music[:genres].length > 0 %>
 		            <%= music[:genres].join(", ") %>
@@ -66,7 +66,7 @@
 		        <td>
 		          <!-- MARTELANCO WARNING :P -->
 		          <%= link_to t('.show', :default => t("helpers.links.show")),
-		                      "musics/#{music[:id]}", :class => 'btn btn-mini btn-primary' %> 
+		                      "/musics/#{music[:id]}", :class => 'btn btn-mini btn-primary' %> 
 		          <%= link_to t('.edit', :default => t("helpers.links.edit")),
 		                      "edit_music_path(music)", :class => 'btn btn-mini' %>
 		          <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
