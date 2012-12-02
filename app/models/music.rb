@@ -340,7 +340,7 @@ class Music < ActiveRecord::Base
         album.add_property(ont_p_lastFMURL, album_info["url"])
         album.add_property(ont_p_hasCover, album_info["image"][-1]["#text"]) #the biggest
 	        
-        if (tags = getSafeField(group_info,["toptags","tag"]))!=nil
+        if (tags = getSafeField(album_info,["toptags","tag"]))!=nil
           tags.each do |tag|
             tag_resource = model.create_resource(tag["url"], ont_genre)
             tag_resource.add_property(ont_p_name, tag["name"])

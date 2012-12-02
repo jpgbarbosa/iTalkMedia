@@ -133,7 +133,7 @@
               <tr> 
                 <th>#</th>
                 <th>Name</th>
-                <th>Type</th>
+                <th>Venue</th>
                 <th>City</th>
                 <th>Country</th>
                 <th></th> <!-- map -->
@@ -145,9 +145,9 @@
                 <tr> 
                   <td><%= ctr %></td>
                   <td><%= g[:name] %></td>
-                  <td><%= g[:type] %></td>
-                  <td><%= g[:city] %></td>
-                  <td><%= g[:country] %></td>
+                  <td><%= g[:venue] %></td>
+                  <td><%= g[:city_name] %></td>
+                  <td><%= g[:country_name] %></td>
                   <td><%= link_to 'map', g[:coords] %></td> <!-- map -->
                 </tr>
                 <% ctr+=1 %>

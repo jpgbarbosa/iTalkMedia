@@ -69,9 +69,7 @@ class Album < ActiveRecord::Base
       album[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
       
       album[:tracks] = get_musics_by_album(id)
-      ap album[:tracks]
       album[:genres] = get_genres(id)
-      ap album[:genres]
       
       return album
     ensure
