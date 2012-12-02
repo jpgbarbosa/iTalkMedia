@@ -329,6 +329,8 @@ class Music < ActiveRecord::Base
           mbid = MusicBrainz.getBandMBID(s["name"])
           if mbid["success"]
             sim = model.create_resource(ns+mbid["data"][:id])
+            sim.add_property(ont_p_name, s["name"])
+            sim.add_property(ont_p_lastFMURL, s["url"])
             sim.add_property(ont_p_hasCover, s["image"].last["#text"])
             musical_group.add_property(ont_p_isLastFMSimilar, sim)
             sim.add_property(ont_p_isLastFMSimilar, musical_group)
