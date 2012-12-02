@@ -1,23 +1,46 @@
-<h1>Listing albums</h1>
-
-<table>
-  <tr>
-    <th>Name</th>
-    <th></th>
-    <th></th>
-    <th></th>
-  </tr>
-
-<% @albums.each do |album| %>
-  <tr>
-    <td><%= album[:name] %></td>
-    <td><%= link_to 'Show', album %></td>
-    <td><%= link_to 'Edit', edit_album_path(album) %></td>
-    <td><%= link_to 'Destroy', album, :method => :delete, :data => { :confirm => 'Are you sure?' } %></td>
-  </tr>
-<% end %>
+<div class="page-header">
+  <h1>Albums</h1>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Name</th>
+      <th>Artist</th>
+      <th>Genre</th>
+      <th>Musics</th>
+      <th>Release Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @albums.each do |album| %>
+      <tr>
+        <td><img width="60" height="60" src=<%=album[:cover]%> class="img-rounded"></td> <!-- Dont show to guilherme-->
+        <td><%= album[:name] %></td>
+        <td><%= link_to album[:artist], "/groups/"+album[:artist_id] %></td>
+        <td>
+          <% if album[:genres]!=nil && album[:genres].length > 0 %>
+            <%= album[:genres][0..1].join(", ") %>
+          <%else%>
+            undefined
+          <%end%>
+        </td>
+        <td><%= album[:trackcount] %></td>
+        <td><%= album[:date] %></td>
+        <td>
+          <!-- MARTELANCO WARNING :P -->
+          <%= link_to t('.show', :default => t("helpers.links.show")),
+                      "albums/#{album[:id]}", :class => 'btn btn-mini btn-primary' %> 
+          <%#= link_to t('.edit', :default => t("helpers.links.edit")),
+                      "edit_music_path(music)", :class => 'btn btn-mini' %>
+          <%#= link_to t('.destroy', :default => t("helpers.links.destroy")),
+                      "cenas a ver",
+                      :method => :delete,
+                      :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
+                      :class => 'btn btn-mini btn-danger' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
 </table>
 
-<br />
-
-<%= link_to 'New Album', new_album_path %>
