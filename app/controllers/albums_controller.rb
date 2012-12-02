@@ -2,11 +2,11 @@ class AlbumsController < ApplicationController
   # GET /albums
   # GET /albums.json
   def index
-    @albums = Album.all
+    @albums = Album.get_all
 
     respond_to do |format|
       format.html # index.html.erb
-      format.json { render json: @albums }
+      format.json { render :json => @albums }
     end
   end
 
@@ -15,12 +15,11 @@ class AlbumsController < ApplicationController
   def show
     puts "----------------- here"
     puts params[:id] #id que vem com os albuns ver linha 112 da view do show dos groups
-    @album = {:name => "cenas"}
-    @musics = Album.get_musics_by_album(params[:id])
+    @album = Album.get_by_id(params[:id])
 
     respond_to do |format|
       format.html # show.html.erb
-      format.json { render json: @album }
+      format.json { render :json => @album }
     end
   end
 
@@ -31,7 +30,7 @@ class AlbumsController < ApplicationController
 
     respond_to do |format|
       format.html # new.html.erb
-      format.json { render json: @album }
+      format.json { render :json => @album }
     end
   end
 
@@ -47,11 +46,11 @@ class AlbumsController < ApplicationController
 
     respond_to do |format|
       if @album.save
-        format.html { redirect_to @album, notice: 'Album was successfully created.' }
-        format.json { render json: @album, status: :created, location: @album }
+        format.html { redirect_to @album, :notice => 'Album was successfully created.' }
+        format.json { render :json => @album, :status => :created, :location => @album }
       else
-        format.html { render action: "new" }
-        format.json { render json: @album.errors, status: :unprocessable_entity }
+        format.html { render :action => "new" }
+        format.json { render :json => @album.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -63,11 +62,11 @@ class AlbumsController < ApplicationController
 
     respond_to do |format|
       if @album.update_attributes(params[:album])
-        format.html { redirect_to @album, notice: 'Album was successfully updated.' }
+        format.html { redirect_to @album, :notice => 'Album was successfully updated.' }
         format.json { head :no_content }
       else
-        format.html { render action: "edit" }
-        format.json { render json: @album.errors, status: :unprocessable_entity }
+        format.html { render :action => "edit" }
+        format.json { render :json => @album.errors, :status => :unprocessable_entity }
       end
     end
   end

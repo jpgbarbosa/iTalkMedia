@@ -180,7 +180,7 @@ class Music < ActiveRecord::Base
               SELECT ?genre_name
               WHERE {
                     <#{ns+id}> rdf:type mo:Track ;
-                    mo:genre ?genre .
+                      mo:genre ?genre .
                     ?genre rdf:type mo:Genre ; 
                       mo:name ?genre_name .
               })
@@ -356,6 +356,7 @@ class Music < ActiveRecord::Base
         track.add_property(ont_p_name, data[0]["title"])
         track.add_property(ont_p_musicalGroup, musical_group)
         track.add_property(ont_p_inAlbum, album)
+        album.add_property(ont_p_hasTrack, track)
 	        
         if(data[0]["bitrate"]) != nil
           track.add_property(ont_p_bitrate, data[0]["bitrate"])

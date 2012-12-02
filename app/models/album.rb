@@ -29,11 +29,110 @@ java_import "com.hp.hpl.jena.rdf.model.Resource"
 class Album < ActiveRecord::Base
   attr_accessible :name
 
-  def self.get_album_info(params)
+  def self.get_by_id(id)
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+					    SELECT ?name ?trackcount ?cover ?band ?band_name
+              WHERE {
+	                  <#{ns+id}> rdf:type mo:Album ;
+                      mo:name ?name ;
+                      mo:trackcount ?trackcount ;
+                      mo:hasCover ?cover ;
+                      mo:musicalgroup ?band .
+                    ?band rdf:type mo:MusicalGroup ;
+                      mo:name ?band_name .
+              })
 
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      
+      if !rs.has_next
+        return nil
+      end
+      
+      qs = rs.next
+      album = {}
+        
+      album[:id] = id
+      album[:name] = qs.get("name").string.to_s
+      album[:trackcount] = qs.get("trackcount").string.to_s
+      album[:cover] = qs.get("cover").string.to_s
+      album[:artist] = qs.get("band_name").string.to_s
+      album[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
+      
+      album[:tracks] = get_musics_by_album(id)
+      ap album[:tracks]
+      album[:genres] = get_genres(id)
+      ap album[:genres]
+      
+      return album
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_all
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+					    SELECT ?album ?name ?trackcount ?cover ?band ?band_name
+              WHERE {
+	                  ?album rdf:type mo:Album ;
+                      mo:name ?name ;
+                      mo:trackcount ?trackcount ;
+                      mo:hasCover ?cover ;
+                      mo:musicalgroup ?band .
+                    ?band rdf:type mo:MusicalGroup ;
+                      mo:name ?band_name .
+              })
+
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      
+      if !rs.has_next
+        return nil
+      end
+      
+      albums = []
+      while rs.has_next
+        qs = rs.next
+        album = {}
+        
+        album[:id] = qs.get("album").get_uri.to_s.split("#").last
+        album[:name] = qs.get("name").string.to_s
+        album[:trackcount] = qs.get("trackcount").string.to_s
+        album[:cover] = qs.get("cover").string.to_s
+        album[:artist] = qs.get("band_name").string.to_s
+        album[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
+        
+        album[:tracks] = get_musics_by_album(album[:id])
+        album[:genres] = get_genres(album[:id])
+      
+        albums << album
+      end
+      
+      return albums
+    ensure
+      dataset.end()
+    end
   end
 
-  def self.get_musics_by_album(params)
+  def self.get_musics_by_album(id)
     
     ontology_ns = "http://musicontology.ws.dei.uc.pt/ontology.owl#"
     ns = "http://musicontology.ws.dei.uc.pt/music#"
@@ -45,22 +144,18 @@ class Album < ActiveRecord::Base
     
   	begin
       dataset.begin(ReadWrite::READ)
-      query = %q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#> 
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#> 
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-					    SELECT ?track_id ?track_name ?track_bitrate ?track_lyric ?track_length ?track_num ?track_year ?album ?album_name ?band ?band_name
+					    SELECT ?track_id ?track_name ?track_bitrate ?track_lyric ?track_length ?track_num ?track_year 
               WHERE {
-	                  ?track_id rdf:type mo:Track ; 
+                    <#{ns+id}> rdf:type mo:Album ;
+                      mo:hasTrack ?track_id .
+                    ?track_id rdf:type mo:Track ; 
 	                    mo:name ?track_name ; 
 	                    mo:bitrate ?track_bitrate ;
 	                    mo:tracklength ?track_length ; 
 	                    mo:tracknum ?track_num ; 
 	                    mo:year ?track_year ;
-                      	mo:musicalgroup ?band ;
-                      	mo:inAlbum ?album .
-                    ?band rdf:type mo:MusicalGroup ;
-                      mo:name ?band_name .
-                    ?album rdf:type mo:Album ;
-                      mo:name ?album_name .
 	                  OPTIONAL { ?track_id mo:hasLyric ?track_lyric . } .
 	                } ORDER BY ?track_id)
         
@@ -69,8 +164,10 @@ class Album < ActiveRecord::Base
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
       
-      genres = []
-
+      if !rs.has_next
+        return nil
+      end
+      
       while rs.has_next
         music = {}
         qs = rs.next
@@ -81,10 +178,6 @@ class Album < ActiveRecord::Base
         music[:length] = qs.get("track_length").string.to_s
         music[:num] = qs.get("track_num").string.to_s
         music[:year] = qs.get("track_year").string.to_s
-        music[:artist] = qs.get("band_name").string.to_s
-        music[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
-        music[:album] = qs.get("album_name").string.to_s
-        music[:album_id] = qs.get("album").get_uri.to_s.split("#").last
 
         if music[:length].to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil
         	music[:length] == "undefined"
@@ -92,20 +185,52 @@ class Album < ActiveRecord::Base
         	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60)} mins"
         end
 
-        #Read genres aside
-        music[:genres] = nil #get_genres(music[:id])
-
-        ap music[:genres]
-
         musics << music
-
+        return musics
       end
     ensure
       dataset.end()
     end
-    
-    	return musics
 	end
+  
+  def self.get_genres(id)
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory)
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+              PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              SELECT ?genre_name
+              WHERE {
+                    <#{ns+id}> rdf:type mo:Album ;
+                      mo:genre ?genre .
+                    ?genre rdf:type mo:Genre ; 
+                      mo:name ?genre_name .
+              })
+
+      query = QueryFactory.create(query)
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      
+      if !rs.has_next
+        return nil
+      end
+      
+      genres = []
+      while rs.has_next
+        qs = rs.next
+
+        genres << qs.get("genre_name").string.to_s
+
+      end
+
+      return genres
+    ensure
+      dataset.end()
+    end
+  end
 
 
 end
