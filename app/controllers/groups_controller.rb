@@ -1,9 +1,11 @@
+require 'musicbrainz'
+
 class GroupsController < ApplicationController
   # GET /groups
   # GET /groups.json
   def index
     @groups = Group.get_all()
-
+    
     respond_to do |format|
       format.html # index.html.erb
       format.json { render :json => @groups }

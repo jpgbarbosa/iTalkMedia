@@ -69,6 +69,7 @@ class Album < ActiveRecord::Base
       album[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
       
       album[:tracks] = get_musics_by_album(id)
+      ap album[:tracks]
       album[:genres] = get_genres(id)
       
       return album
@@ -155,12 +156,13 @@ class Album < ActiveRecord::Base
 	                    mo:tracknum ?track_num ; 
 	                    mo:year ?track_year ;
 	                  OPTIONAL { ?track_id mo:hasLyric ?track_lyric . } .
-	                } ORDER BY ?track_id)
+	                } ORDER BY ?track_num)
         
       query = QueryFactory.create(query)
 
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
+      #ResultSetFormatter.out(rs)
       
       if !rs.has_next
         return nil
@@ -176,16 +178,18 @@ class Album < ActiveRecord::Base
         music[:length] = qs.get("track_length").string.to_s
         music[:num] = qs.get("track_num").string.to_s
         music[:year] = qs.get("track_year").string.to_s
+        
+        music[:genres] = Music.get_genres(music[:id])
 
         if music[:length].to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil
         	music[:length] == "undefined"
         else
-        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60)} mins"
+        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60).gsub(' ','0')} mins"
         end
 
         musics << music
-        return musics
       end
+      return musics
     ensure
       dataset.end()
     end
@@ -221,7 +225,6 @@ class Album < ActiveRecord::Base
         qs = rs.next
 
         genres << qs.get("genre_name").string.to_s
-
       end
 
       return genres

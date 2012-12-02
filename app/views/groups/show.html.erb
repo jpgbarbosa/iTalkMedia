@@ -17,10 +17,8 @@
           <dd><%= @group[:name] %></dd>
           <dt><strong>Genre:</strong></dt>
           <dd>
-      		  <% if @group[:genre] != nil %>
-               	 <% @group[:genre].each do |g| %>
-                	 <%= g%><%= ", " %>
-                	<%end%>
+      		  <% if @group[:genres] != nil %>
+			  <%= @group[:genres].join(", ") %>
             <%else%>
               undefined
       		  <%end%>

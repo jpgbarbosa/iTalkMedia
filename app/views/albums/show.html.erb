@@ -43,8 +43,6 @@
 		  <thead>
 		    <tr>
 			  <th>Music</th>
-		      <th>Album</th>
-		      <th>Artist</th>
 		      <th>Genre</th>
 		      <th>Length</th>
 		    </tr>
@@ -57,7 +55,7 @@
 				    <td><%= @album[:artist] %></td>
 		        <td>
 		          <% if music[:genres]!=nil && music[:genres].length > 0 %>
-		            <%= music[:genres].join(", ") %>
+		            <%= music[:genres][0..2].join(", ") %>
 		          <%else%>
 		            undefined
 		          <%end%>

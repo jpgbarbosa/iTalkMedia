@@ -10,6 +10,7 @@ require 'lib/jar/javalib/xercesImpl-2.10.0.jar'
 require 'lib/jar/javalib/jena-arq-2.9.3.jar'
 require 'lib/jar/javalib/log4j-1.2.16.jar'
 require 'lib/jar/javalib/xml-apis-1.4.01.jar'
+require 'musicbrainz'
 
 require 'java'
 
@@ -323,9 +324,10 @@ class Music < ActiveRecord::Base
         #- LastFM Similar #
         similars = group_info["similar"]["artist"]
         similars.each do |s|
-          s_iter = model.list_subjects_with_property(ont_p_lastFMURL, s["url"])
-          while s_iter.has_next
-            sim = s_iter.next_resource
+          mbid = MusicBrainz.getBandMBID(s["name"])
+          if mbid["success"]
+            sim = model.create_resource(ns+mbid["data"][:id])
+            sim.add_property(ont_p_hasCover, s["image"].last["#text"])
             musical_group.add_property(ont_p_isLastFMSimilar, sim)
             sim.add_property(ont_p_isLastFMSimilar, musical_group)
           end

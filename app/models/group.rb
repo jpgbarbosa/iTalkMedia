@@ -69,7 +69,7 @@ class Group < ActiveRecord::Base
       band = {}
       qs = rs.next
 
-      band[:id] = ns+id
+      band[:id] = id
       band[:name] = qs.get("band_name").string.to_s
       band[:bio] = qs.get("bio").string.to_s
       band[:cover] = qs.get("cover").string.to_s
@@ -80,17 +80,17 @@ class Group < ActiveRecord::Base
       place_formed_uri = qs.get("place_formed_id").get_uri
       band[:placeformed] = get_placeformed(place_formed_uri)
       ap band[:placeformed]
-      band[:albums] = get_albums(band[:id])
+      band[:albums] = get_albums(ns+band[:id])
       ap band[:albums]
-      band[:concerts] = get_concerts(band[:id])
+      band[:concerts] = get_concerts(ns+band[:id])
       ap band[:concerts]
-      band[:members] = get_members(band[:id])
+      band[:members] = get_members(ns+band[:id])
       ap band[:members]
+      band[:genres] = get_genres(ns+band[:id])
+      ap band[:genres]
       #band[:similar] = get_lastfm_similar(band[:id])
         
       #band[:lastfm_similar] = get_similar(band[:id])
-        
-      band[:id] = band[:id].to_s.split("#").last
       
       return band
     ensure
@@ -150,6 +150,7 @@ class Group < ActiveRecord::Base
         ap band[:concerts]
         band[:members] = get_members(band[:id])
         ap band[:members]
+        band[:genres] = get_genres(band[:id])
         #band[:similar] = get_lastfm_similar(band[:id])
         
         #band[:lastfm_similar] = get_similar(band[:id])
@@ -354,6 +355,45 @@ class Group < ActiveRecord::Base
       end
       
       return members
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_genres(id)
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory)
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+              PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              SELECT ?genre_name
+              WHERE {
+                    <#{id}> rdf:type mo:MusicalGroup ;
+                      mo:genre ?genre .
+                    ?genre rdf:type mo:Genre ; 
+                      mo:name ?genre_name .
+              })
+
+      query = QueryFactory.create(query)
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      
+      if !rs.has_next
+        return nil
+      end
+      
+      genres = []
+      while rs.has_next
+        qs = rs.next
+
+        genres << qs.get("genre_name").string.to_s
+
+      end
+
+      return genres
     ensure
       dataset.end()
     end
