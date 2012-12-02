@@ -18,8 +18,8 @@
         <% @groups.each do |group| %>
           <tr>
             <td><%= group[:name] %></td>
-            <% if group[:genre]!=nil && group[:genre].length > 0 %>
-                <td><%= group[:genre][0] %></td>
+            <% if group[:genres]!=nil && group[:genres].length > 0 %>
+			<td><%= group[:genres][0..2].join(", ") %></td>
             <%else%>
                 <td> undefined </td>
             <%end%>
