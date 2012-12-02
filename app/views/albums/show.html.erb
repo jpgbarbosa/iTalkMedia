@@ -51,6 +51,8 @@
 		    <% @album[:tracks].each do |music| %>
 		      <tr>
 		        <td><%= music[:name] %></td>
+		        <td><%= @album[:name] %></td>
+				    <td><%= @album[:artist] %></td>
 		        <td>
 		          <% if music[:genres]!=nil && music[:genres].length > 0 %>
 		            <%= music[:genres][0..2].join(", ") %>
@@ -62,7 +64,7 @@
 		        <td>
 		          <!-- MARTELANCO WARNING :P -->
 		          <%= link_to t('.show', :default => t("helpers.links.show")),
-		                      "musics/#{music[:id]}", :class => 'btn btn-mini btn-primary' %> 
+		                      "/musics/#{music[:id]}", :class => 'btn btn-mini btn-primary' %> 
 		          <%= link_to t('.edit', :default => t("helpers.links.edit")),
 		                      "edit_music_path(music)", :class => 'btn btn-mini' %>
 		          <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
