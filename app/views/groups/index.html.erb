@@ -5,6 +5,7 @@
 <table class="table table-striped">
     <thead>
       <tr>
+		  <th></th>
         <th>Name</th>
         <th>Genre</th>
         <th>Foundation Year</th>
@@ -17,6 +18,7 @@
     <tbody>
         <% @groups.each do |group| %>
           <tr>
+			  <td><img width="60" height="60" src=<%=group[:cover]%> class="img-rounded"></td> <!-- Dont show to guilherme-->
             <td><%= group[:name] %></td>
             <% if group[:genres]!=nil && group[:genres].length > 0 %>
 			<td><%= group[:genres][0..2].join(", ") %></td>

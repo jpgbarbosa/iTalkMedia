@@ -49,7 +49,12 @@ module Extract
 					mp3["length"] = mp3info.length.to_i
 					mp3["bitrate"] = mp3info.bitrate
 					mp3["genre"] = mp3info.tag2.TCON
-					mp3["year"] = mp3info.tag2.TYER
+
+          if mp3info.tag2.TYER!=nil && mp3info.tag2.TYER!=""
+            mp3["year"] = mp3info.tag2.TYER
+          else
+            mp3["year"] = mp3info.tag2.TDRC
+          end
 
 
 					#LastFM info

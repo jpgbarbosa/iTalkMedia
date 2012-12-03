@@ -144,6 +144,7 @@
               </tr>
             <thead>
             <tbody>
+				<%if @group[:concerts]!=nil%>
               <% ctr = 1 %>
               <% @group[:concerts].each do |g| %>
                 <tr> 
@@ -160,6 +161,9 @@
                 </tr>
                 <% ctr+=1 %>
               <%end%>
+			  <%else%>
+			  <tr>This Artist has no concerts.</tr>
+			  <%end%>
             </tbody>
 
           </table>

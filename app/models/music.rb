@@ -224,6 +224,15 @@ class Music < ActiveRecord::Base
       model.set_ns_prefix("mo", ontology_ns)
       model.set_ns_prefix("item", ns)
       model.set_ns_prefix("place", place_ns)
+      
+      iterator = model.list_statements()
+      ctr = 0
+      while iterator.has_next
+        ctr+=1
+        iterator.next
+      end
+      
+      puts ctr
 	      
       # CLASSES #
 			ont_artist = ONTOLOGY.get_ont_class(ontology_ns+"Artist")
@@ -272,6 +281,8 @@ class Music < ActiveRecord::Base
       ont_p_songKickURL = ONTOLOGY.get_property(ontology_ns+"songKickURL")
 	      
       puts "---------\nSIZE: #{data_processed.length}\n--------"
+      
+      cached_musicbrainz = {}
 	      
       data_processed.each do |data|
         group_info = data[1]["artist"]["data"]["artist"]
@@ -306,7 +317,7 @@ class Music < ActiveRecord::Base
         musical_group.add_property(ont_p_hasBio, bio_info["content"]) #could also be summary
         musical_group.add_property(ont_p_foundationYear, bio_info["formationlist"]["formation"]["yearfrom"])
         if bio_info["formationlist"]["formation"]["yearto"]!=nil && bio_info["formationlist"]["formation"]["yearto"] != ""
-          musical_group.add_property(ont_p_foundationYear, bio_info["formationlist"]["formation"]["yearto"])
+          musical_group.add_property(ont_p_endYear, bio_info["formationlist"]["formation"]["yearto"])
         end
 	        
         #- Geocoding Placeformed #
@@ -326,9 +337,22 @@ class Music < ActiveRecord::Base
         #- LastFM Similar #
         similars = group_info["similar"]["artist"]
         similars.each do |s|
-          mbid = MusicBrainz.getBandMBID(s["name"])
-          if mbid["success"]
-            sim = model.create_resource(ns+mbid["data"][:id])
+          if !cached_musicbrainz.has_key?(s["name"])
+            mbid = MusicBrainz.getBandMBID(s["name"])
+            if mbid["success"]
+              sim = model.create_resource(ns+mbid["data"][:id])
+              sim.add_property(ont_p_name, s["name"])
+              sim.add_property(ont_p_lastFMURL, s["url"])
+              sim.add_property(ont_p_hasCover, s["image"].last["#text"])
+              musical_group.add_property(ont_p_isLastFMSimilar, sim)
+              sim.add_property(ont_p_isLastFMSimilar, musical_group)
+              cached_musicbrainz[s["name"]] = {
+                :id => mbid["data"][:id],
+              }
+            end
+          else
+            sim_info = cached_musicbrainz[s["name"]]
+            sim = model.create_resource(ns+sim_info[:id])
             sim.add_property(ont_p_name, s["name"])
             sim.add_property(ont_p_lastFMURL, s["url"])
             sim.add_property(ont_p_hasCover, s["image"].last["#text"])
@@ -339,8 +363,16 @@ class Music < ActiveRecord::Base
 
         # ALBUM INFO #
         album_info = data[1]["album"]["data"]["album"]
-
-        album = model.create_resource(ns+"#{album_info["mbid"]}", ont_album)
+        
+        if album_info["mbid"]!=""
+          album = model.create_resource(ns+"#{album_info["mbid"]}", ont_album)
+        else
+          album_mbid = MusicBrainz.getAlbumMBID(data[0]["album"])
+          if album_mbid["success"]
+            album_mbid = album_mbid["data"][:id]
+            album = model.create_resource(ns+"#{album_mbid}", ont_album)
+          end
+        end
         album.add_property(ont_p_name, data[0]["album"])
         album.add_property(ont_p_trackcount, album_info["tracks"].size)
         album.add_property(ont_p_lastFMURL, album_info["url"])
@@ -354,7 +386,7 @@ class Music < ActiveRecord::Base
           end
         end
         
-        if album_info["releasedate"]!=nil || album_info["releasedate"]!=""
+        if album_info["releasedate"]!=nil && album_info["releasedate"].strip!=""
           album.add_property(ont_p_date, Date.parse(album_info["releasedate"]).to_s)
         end
 
@@ -384,7 +416,7 @@ class Music < ActiveRecord::Base
         end
 	        
         # EVENTS INFO #
-        if data[2]["events"]["success"] == true
+        if data[2]["events"]["success"] == true && data[2]["events"]["data"]!={}
           events_info = data[2]["events"]["data"]["event"]
 
           events_info.each do |e|
@@ -415,13 +447,10 @@ class Music < ActiveRecord::Base
             event.add_property(ont_p_inPlace, place)
           end
         end
-	        
-        model.write(java.lang.System::out, "RDF/XML-ABBREV")
       end
-	      
-	      
-	      
-	      
+	    
+      model.write(java.lang.System::out, "RDF/XML-ABBREV")
+      
       dataset.commit()
     ensure
       dataset.end()

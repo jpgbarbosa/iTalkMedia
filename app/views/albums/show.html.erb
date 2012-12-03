@@ -57,8 +57,6 @@
     		    <% @album[:tracks].each do |music| %>
     		      <tr>
     		        <td><%= music[:name] %></td>
-    		        <td><%= @album[:name] %></td>
-    				    <td><%= @album[:artist] %></td>
     		        <td>
     		          <% if music[:genres]!=nil && music[:genres].length > 0 %>
     		            <%= music[:genres][0..2].join(", ") %>

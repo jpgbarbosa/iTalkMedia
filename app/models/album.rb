@@ -45,17 +45,17 @@ class Album < ActiveRecord::Base
                       mo:name ?name ;
                       mo:trackcount ?trackcount ;
                       mo:hasCover ?cover ;
-                      mo:date ?date ;
                       mo:musicalgroup ?band .
                     ?band rdf:type mo:MusicalGroup ;
                       mo:name ?band_name .
+                    OPTIONAL { <#{ns+id}> mo:date ?date . } .
               })
 
       query = QueryFactory.create(query)
 
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
-      
+      #ResultSetFormatter.out(rs)
       if !rs.has_next
         return nil
       end
@@ -69,11 +69,13 @@ class Album < ActiveRecord::Base
       album[:cover] = qs.get("cover").string.to_s
       album[:artist] = qs.get("band_name").string.to_s
       album[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
-      album[:date] = Date.parse(qs.get("date").to_s).strftime("%-d %B %Y")
+      if qs.get("date").to_s!=""
+        album[:date] = Date.parse(qs.get("date").to_s).strftime("%-d %B %Y")
+      end
       
       album[:tracks] = get_musics_by_album(id)
       album[:genres] = get_genres(id)
-      
+
       return album
     ensure
       dataset.end()
@@ -95,17 +97,17 @@ class Album < ActiveRecord::Base
                       mo:name ?name ;
                       mo:trackcount ?trackcount ;
                       mo:hasCover ?cover ;
-                      mo:date ?date ;
                       mo:musicalgroup ?band .
                     ?band rdf:type mo:MusicalGroup ;
                       mo:name ?band_name .
+                    OPTIONAL { ?album mo:date ?date . } .
               })
 
       query = QueryFactory.create(query)
 
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
-      
+      #ResultSetFormatter.out(rs)
       if !rs.has_next
         return nil
       end
@@ -121,12 +123,15 @@ class Album < ActiveRecord::Base
         album[:cover] = qs.get("cover").string.to_s
         album[:artist] = qs.get("band_name").string.to_s
         album[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
-        album[:date] = Date.parse(qs.get("date").to_s).strftime("%-d %B %Y")
+        if qs.get("date").to_s!=""
+          album[:date] = Date.parse(qs.get("date").to_s).strftime("%-d %B %Y")
+        end
         
         album[:tracks] = get_musics_by_album(album[:id])
         album[:genres] = get_genres(album[:id])
       
         albums << album
+        ap album
       end
       
       return albums
