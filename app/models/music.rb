@@ -84,7 +84,7 @@ class Music < ActiveRecord::Base
         if music[:length].to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil
         	music[:length] == "undefined"
         else
-        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60)} mins"
+        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60).gsub(' ','0')} mins"
         end
 
         #Read genres aside
@@ -156,7 +156,7 @@ class Music < ActiveRecord::Base
         if music[:length].to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil
         	music[:length] == "undefined"
         else
-        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60)} mins"
+        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60).gsub(' ','0')} mins"
         end
         
         puts "lyric #{qs.get("track_lyric")}"
