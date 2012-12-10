@@ -79,15 +79,15 @@ class Group < ActiveRecord::Base
         
       place_formed_uri = qs.get("place_formed_id").get_uri
       band[:placeformed] = get_placeformed(place_formed_uri)
-      ap band[:placeformed]
+
       band[:albums] = get_albums(ns+band[:id])
-      ap band[:albums]
+
       band[:concerts] = get_concerts(ns+band[:id])
-      ap band[:concerts]
+
       band[:members] = get_members(ns+band[:id])
-      ap band[:members]
+
       band[:genres] = get_genres(ns+band[:id])
-      ap band[:genres]
+
       #band[:similar] = get_lastfm_similar(band[:id])
         
       #band[:lastfm_similar] = get_similar(band[:id])

@@ -130,8 +130,7 @@ class Album < ActiveRecord::Base
         album[:tracks] = get_musics_by_album(album[:id])
         album[:genres] = get_genres(album[:id])
       
-        albums << album
-        ap album
+        albums << album  
       end
       
       return albums

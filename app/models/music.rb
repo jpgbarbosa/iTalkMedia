@@ -158,8 +158,6 @@ class Music < ActiveRecord::Base
         else
         	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60).gsub(' ','0')} mins"
         end
-        
-        puts "lyric #{qs.get("track_lyric")}"
 
         music[:genres] = get_genres(id)
       end
@@ -279,6 +277,9 @@ class Music < ActiveRecord::Base
 			ont_p_date = ONTOLOGY.get_property(ontology_ns+"date")
 			ont_p_tracknum = ONTOLOGY.get_property(ontology_ns+"tracknum")
       ont_p_songKickURL = ONTOLOGY.get_property(ontology_ns+"songKickURL")
+      # iTunes properties
+      ont_p_lastPlayed = ONTOLOGY.get_property(ontology_ns+"lastPlayed")
+      ont_p_playcount = ONTOLOGY.get_property(ontology_ns+"playcount")
 	      
       puts "---------\nSIZE: #{data_processed.length}\n--------"
       
@@ -447,6 +448,20 @@ class Music < ActiveRecord::Base
             event.add_property(ont_p_inPlace, place)
           end
         end
+        
+        # iTunes INFO
+        last_played_date = `osascript -e 'tell application "iTunes" to get played date of track "#{data[0]["title"]}" in playlist "#{data[0]["artist"]}"'`
+        if last_played_date != ""
+          last_played_date = Date.parse(last_played_date)
+          track.add_property(ont_p_lastPlayed, last_played_date.to_s)
+        end
+        
+        played_count = `osascript -e 'tell application "iTunes" to get played count of track "#{data[0]["title"]}" in playlist "#{data[0]["artist"]}"'`
+        if played_count != ""
+          played_count = played_count.to_i
+          track.add_property(ont_p_playcount, played_count)
+        end
+        
       end
 	    
       model.write(java.lang.System::out, "RDF/XML-ABBREV")
