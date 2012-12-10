@@ -27,6 +27,7 @@ java_import "com.hp.hpl.jena.tdb.TDBFactory"
 java_import "com.hp.hpl.jena.rdf.model.Model"
 java_import "com.hp.hpl.jena.rdf.model.ModelFactory"
 java_import "com.hp.hpl.jena.rdf.model.Property"
+java_import "com.hp.hpl.jena.ontology.OntProperty"
 java_import "com.hp.hpl.jena.rdf.model.Resource"
 
 class Music < ActiveRecord::Base
@@ -255,7 +256,7 @@ class Music < ActiveRecord::Base
 			ont_p_hasLyric = ONTOLOGY.get_property(ontology_ns+"hasLyric")
 			ont_p_hasLabel = ONTOLOGY.get_property(ontology_ns+"hasLabel")
 			ont_p_hasTrack = ONTOLOGY.get_property(ontology_ns+"hasTrack")
-      ont_p_hasCover = ONTOLOGY.get_property(ontology_ns+"hasCover")
+      ont_p_hasCover = ONTOLOGY.get_ont_property(ontology_ns+"hasCover")
       ont_p_hasBio = ONTOLOGY.get_property(ontology_ns+"hasBio")
       ont_p_hasPerformance = ONTOLOGY.get_property(ontology_ns+"hasPerformance")
       ont_p_hasConcert = ONTOLOGY.get_property(ontology_ns+"hasConcert")
@@ -449,7 +450,7 @@ class Music < ActiveRecord::Base
           end
         end
         
-        # iTunes INFO
+        #--- iTunes INFO ---#
         last_played_date = `osascript -e 'tell application "iTunes" to get played date of track "#{data[0]["title"]}" in playlist "#{data[0]["artist"]}"'`
         if last_played_date != ""
           last_played_date = Date.parse(last_played_date)

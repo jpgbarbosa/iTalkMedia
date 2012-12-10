@@ -72,7 +72,7 @@ class Group < ActiveRecord::Base
       band[:id] = id
       band[:name] = qs.get("band_name").string.to_s
       band[:bio] = qs.get("bio").string.to_s
-      band[:cover] = qs.get("cover").string.to_s
+      band[:cover] = get_image(ns+band[:id])
       band[:lastFMURL] = qs.get("lastFMURL").string.to_s
       band[:foundation_year] = qs.get("foundation_year").to_s
       band[:end_year] = qs.get("end_year").to_s
@@ -111,12 +111,11 @@ class Group < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       query = %q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-					    SELECT ?band_id ?band_name ?bio ?cover ?lastFMURL ?foundation_year ?place_formed_id ?end_year
+					    SELECT ?band_id ?band_name ?bio ?lastFMURL ?foundation_year ?place_formed_id ?end_year ?cover
               WHERE {
 	                  ?band_id rdf:type mo:MusicalGroup ;
 	                    mo:name ?band_name ;
                       mo:hasBio ?bio ;
-                      mo:hasCover ?cover ;
                       mo:lastFMURL ?lastFMURL ;
                       mo:foundationYear ?foundation_year ;
                       mo:placeFormed ?place_formed_id .
@@ -136,7 +135,7 @@ class Group < ActiveRecord::Base
         band[:id] = qs.get("band_id").get_uri
         band[:name] = qs.get("band_name").string.to_s
         band[:bio] = qs.get("bio").string.to_s
-        band[:cover] = qs.get("cover").string.to_s
+        band[:cover] = get_image(band[:id])
         band[:lastFMURL] = qs.get("lastFMURL").string.to_s
         band[:foundation_year] = qs.get("foundation_year").to_s
         band[:end_year] = qs.get("end_year").to_s
@@ -251,6 +250,38 @@ class Group < ActiveRecord::Base
       end
       
       return albums
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_image(id)
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+					    SELECT ?image
+              WHERE {
+	                  <#{id}> rdf:type mo:MusicalGroup ;
+                      mo:hasCover ?image .
+              }LIMIT 1)
+
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      
+      if !rs.has_next
+        return nil
+      end
+      
+      qs = rs.next
+      image = qs.get("image").to_s
+      
+      return image
     ensure
       dataset.end()
     end
