@@ -1,15 +1,21 @@
+<div class="span9">
 <%- model_class = Music -%>
 <div class="page-header">
-<h1><%=t '.title', :default => t('helpers.titles.new', :model => model_class.model_name.human, :default => "New #{model_class.model_name.human}") %></h1>
+	<h1><%=t '.title', :default => t('helpers.titles.new', :model => model_class.model_name.human, :default => "New #{model_class.model_name.human}") %></h1>
 </div>
 
-<div class="row">
-	
-	<div class="well" >
-		<%= render :partial => 'form' %>
+	<div class="row">
+		
+		<div class="well" >
+			<%= render :partial => 'form' %>
+		</div>
+		
+		<div class="well" >
+			<%= render :partial => 'form2' %>
+		</div>
 	</div>
-	
-	<div class="well" >
-		<%= render :partial => 'form2' %>
-	</div>
+</div>
+
+<div class="span3" >
+		<%= render 'layouts/about_us' %>
 </div>

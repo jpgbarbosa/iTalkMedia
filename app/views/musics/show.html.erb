@@ -1,88 +1,117 @@
-<%- model_class = Music -%>
-<div class="page-header">
-  <h1><%=t '.title', :default => model_class.model_name.human %></h1>
-</div>
-
-<div class="accordion">
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
-        Music
-      </a>
-    </div>
-    <div id="collapseOne" class="accordion-body collapse in">
-      <div class="accordion-inner">
-        <dl class="dl-horizontal">
-          <dt><strong>Name:</strong></dt>
-          <dd><%= @music[:name] %></dd>
-          <dt><strong>Artist:</strong></dt>
-          <dd><%= @music[:artist] %></dd>
-          <dt><strong>Album:</strong></dt>
-          <dd><%= @music[:album] %></dd>
-          <dt><strong>Year:</strong></dt>
-          <dd><%= @music[:year] %></dd>
-        </dl>
-      </div>
-    </div>
+<div class="span9"> 
+  <%- model_class = Music -%>
+  <div class="page-header">
+    <h1><%=t '.title', :default => model_class.model_name.human %></h1>
   </div>
 
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
-        More Details
-      </a>
-    </div>
-    <div id="collapseTwo" class="accordion-body collapse">
-      <div class="accordion-inner">
-        <dl class="dl-horizontal">
-
-          <dt><strong>Length:</strong></dt>
-          <dd><%= @music[:length] %></dd>
-          <dt><strong>Number:</strong></dt>
-          <dd><%= @music[:num] %></dd>
-          <dt><strong>Genre:</strong></dt>
-          <dd>
-              <%if @music[:genres] != nil && @music[:genres].length > 0 %>
-                <%= @music[:genres].join(", ") %>
-              <%else%>
-                undefined
-              <%end%>
-          </dd>
-          <dt><strong>Bitrate:</strong></dt>
-          <dd><%= @music[:bitrate] %></dd>
-
-        </dl>
+  <div class="accordion">
+    <div class="accordion-group">
+      <div class="accordion-heading">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+          Music
+        </a>
+      </div>
+      <div id="collapseOne" class="accordion-body collapse in">
+        <div class="accordion-inner">
+          <dl class="dl-horizontal">
+            <dt><strong>Name:</strong></dt>
+            <dd><%= @music[:name] %></dd>
+            <dt><strong>Artist:</strong></dt>
+            <dd><%= @music[:artist] %></dd>
+            <dt><strong>Album:</strong></dt>
+            <dd><%= @music[:album] %></dd>
+            <dt><strong>Year:</strong></dt>
+            <dd><%= @music[:year] %></dd>
+          </dl>
+        </div>
       </div>
     </div>
+
+    <div class="accordion-group">
+      <div class="accordion-heading">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+          More Details
+        </a>
+      </div>
+      <div id="collapseTwo" class="accordion-body collapse">
+        <div class="accordion-inner">
+          <dl class="dl-horizontal">
+
+            <dt><strong>Length:</strong></dt>
+            <dd><%= @music[:length] %></dd>
+            <dt><strong>Number:</strong></dt>
+            <dd><%= @music[:num] %></dd>
+            <dt><strong>Genre:</strong></dt>
+            <dd>
+                <%if @music[:genres] != nil && @music[:genres].length > 0 %>
+                  <%= @music[:genres].join(", ") %>
+                <%else%>
+                  undefined
+                <%end%>
+            </dd>
+            <dt><strong>Bitrate:</strong></dt>
+            <dd><%= @music[:bitrate] %></dd>
+
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-group">
+      <div class="accordion-heading">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
+          Lyrics
+        </a>
+      </div>
+      <div id="collapseThree" class="accordion-body collapse">
+        <div class="accordion-inner">
+          <dl class="dl-horizontal">
+  			<%= @music[:lyric] %>
+  		</dl>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
-        Lyrics
-      </a>
-    </div>
-    <div id="collapseThree" class="accordion-body collapse">
-      <div class="accordion-inner">
-        <dl class="dl-horizontal">
-			<%= @music[:lyric] %>
-		</dl>
-      </div>
-    </div>
+
+  <div class="form-actions">
+    <%= link_to t('.back', :default => t("helpers.links.back")),
+                musics_path, :class => 'btn'  %>
+    <%= link_to t('.edit', :default => t("helpers.links.edit")),
+                edit_music_path(@music), :class => 'btn' %>
+    <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
+                music_path(@music),
+                :method => 'delete',
+                :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
+                :class => 'btn btn-danger' %>
   </div>
 
 </div>
 
-
-<div class="form-actions">
-  <%= link_to t('.back', :default => t("helpers.links.back")),
-              musics_path, :class => 'btn'  %>
-  <%= link_to t('.edit', :default => t("helpers.links.edit")),
-              edit_music_path(@music), :class => 'btn' %>
-  <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
-              music_path(@music),
-              :method => 'delete',
-              :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
-              :class => 'btn btn-danger' %>
+<div class="span3">
+  <h3>Recommendations</h3>
+  <div id="myCarousel" class="carousel slide">
+    <div id="carousel-item-container"class="carousel-inner">
+      <% @recommendations.each do |rec| %>
+        <%if rec==@recommendations.first%>
+            <div class="item active">
+            <img src=<%=rec[:track][:cover]%> alt="">
+            <div class="carousel-caption">
+              <h4><%=rec[:track][:name]%></h4>
+            </div>
+          </div>  
+        <%else%>
+          <div class="item">
+            <img src=<%=rec[:track][:cover]%> alt="">
+            <div class="carousel-caption">
+              <h4><%=rec[:track][:name]%></h4>
+            </div>
+          </div>
+        <%end%>
+      <% end %>
+    </div>
+    <a class="left carousel-control" href="#myCarousel" data-slide="prev">‹</a>
+    <a class="right carousel-control" href="#myCarousel" data-slide="next">›</a>
+  </div>
 </div>
-
