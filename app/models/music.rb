@@ -237,6 +237,38 @@ class Music < ActiveRecord::Base
     end
   end
   
+  def self.get_album_cover(album_id)
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory)
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+              PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              SELECT ?cover
+              WHERE {
+                    <#{ns+album_id}> rdf:type mo:Album ;
+                      mo:hasCover ?cover .
+              })
+
+      query = QueryFactory.create(query)
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      
+      if !rs.has_next
+        return ""
+      end
+      
+      qs = rs.next
+      cover = qs.get("cover").string.to_s
+
+      return cover
+    ensure
+      dataset.end()
+    end
+  end
+  
   def self.get_recommendation(genres, track_id)
     genres_hash = {}
     
@@ -266,7 +298,11 @@ class Music < ActiveRecord::Base
           end
           
           track_rec = {
-            :track => track,
+            :track => {
+              :id => track[:id],
+              :name => track[:name],
+              :cover => get_album_cover(track[:album_id])
+            },
             :count => count*5 + plays
           }
           

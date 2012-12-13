@@ -264,7 +264,11 @@ class Album < ActiveRecord::Base
         
         if count > 0
           album_rec = {
-            :album => album,
+            :album => {
+              :id => album[:id],
+              :name => album[:name],
+              :cover => album[:cover]
+            },
             :count => count
           }
           recommended << album_rec
