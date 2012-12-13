@@ -1,92 +1,100 @@
-<p id="notice"><%= notice %></p>
+<div class="span9">
+
+  <p id="notice"><%= notice %></p>
 
 
-<div class="accordion">
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
-        Album
-      </a>
-    </div>
-    <div id="collapseOne" class="accordion-body collapse in">
-      <div class="accordion-inner">
-        <div style="float:left;">
+  <div class="accordion">
+    <div class="accordion-group">
+      <div class="accordion-heading">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+          Album
+        </a>
+      </div>
+      <div id="collapseOne" class="accordion-body collapse in">
+        <div class="accordion-inner">
+          <div style="float:left;">
+            <dl class="dl-horizontal">
+              <img width="80" height="80" src=<%=@album[:cover]%> class="img-rounded">
+            </dl>
+          </div>
+          <div style="float:left;">
           <dl class="dl-horizontal">
-            <img width="80" height="80" src=<%=@album[:cover]%> class="img-rounded">
+            <dt><strong>Artist:</strong></dt>
+            <dd><%= @album[:artist] %></dd>
+            <dt><strong>Album:</strong></dt>
+            <dd><%= @album[:name] %></dd>
+            <dt><strong>Genre:</strong></dt>
+            <dd>
+              <% if @album[:genres] != nil %>
+                   <%= @album[:genres].join(", ") %>
+              <%else%>
+                undefined
+              <%end%>
+            </dd>
+            <dt><strong>Release Date:</strong></dt>
+            <dd><%= @album[:date] %></dd>
           </dl>
         </div>
-        <div style="float:left;">
-        <dl class="dl-horizontal">
-          <dt><strong>Artist:</strong></dt>
-          <dd><%= @album[:artist] %></dd>
-          <dt><strong>Album:</strong></dt>
-          <dd><%= @album[:name] %></dd>
-          <dt><strong>Genre:</strong></dt>
-          <dd>
-            <% if @album[:genres] != nil %>
-                 <%= @album[:genres].join(", ") %>
-            <%else%>
-              undefined
-            <%end%>
-          </dd>
-          <dt><strong>Release Date:</strong></dt>
-          <dd><%= @album[:date] %></dd>
-        </dl>
+        </div>
       </div>
+    </div>
+
+    <div class="accordion-group">
+      <div class="accordion-heading">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+          Musics
+        </a>
+      </div>
+      <div id="collapseTwo" class="accordion-body collapse">
+        <div class="accordion-inner">
+      		<table class="table table-striped">
+      		  <thead>
+      		    <tr>
+      			  <th>Music</th>
+      		      <th>Genre</th>
+      		      <th>Length</th>
+      		    </tr>
+      		  </thead>
+      		  <tbody>
+      		    <% @album[:tracks].each do |music| %>
+      		      <tr>
+      		        <td><%= music[:name] %></td>
+      		        <td>
+      		          <% if music[:genres]!=nil && music[:genres].length > 0 %>
+      		            <%= music[:genres][0..2].join(", ") %>
+      		          <%else%>
+      		            undefined
+      		          <%end%>
+      		        </td>
+      		        <td><%= music[:length] %></td>
+      		        <td>
+      		          <!-- MARTELANCO WARNING :P -->
+      		          <%= link_to t('.show', :default => t("helpers.links.show")),
+      		                      "/musics/#{music[:id]}", :class => 'btn btn-mini btn-primary' %> 
+      		          <%= link_to t('.edit', :default => t("helpers.links.edit")),
+      		                      "edit_music_path(music)", :class => 'btn btn-mini' %>
+      		          <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
+      		                      "cenas a ver",
+      		                      :method => :delete,
+      		                      :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
+      		                      :class => 'btn btn-mini btn-danger' %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
-        Musics
-      </a>
-    </div>
-    <div id="collapseTwo" class="accordion-body collapse">
-      <div class="accordion-inner">
-    		<table class="table table-striped">
-    		  <thead>
-    		    <tr>
-    			  <th>Music</th>
-    		      <th>Genre</th>
-    		      <th>Length</th>
-    		    </tr>
-    		  </thead>
-    		  <tbody>
-    		    <% @album[:tracks].each do |music| %>
-    		      <tr>
-    		        <td><%= music[:name] %></td>
-    		        <td>
-    		          <% if music[:genres]!=nil && music[:genres].length > 0 %>
-    		            <%= music[:genres][0..2].join(", ") %>
-    		          <%else%>
-    		            undefined
-    		          <%end%>
-    		        </td>
-    		        <td><%= music[:length] %></td>
-    		        <td>
-    		          <!-- MARTELANCO WARNING :P -->
-    		          <%= link_to t('.show', :default => t("helpers.links.show")),
-    		                      "/musics/#{music[:id]}", :class => 'btn btn-mini btn-primary' %> 
-    		          <%= link_to t('.edit', :default => t("helpers.links.edit")),
-    		                      "edit_music_path(music)", :class => 'btn btn-mini' %>
-    		          <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
-    		                      "cenas a ver",
-    		                      :method => :delete,
-    		                      :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
-    		                      :class => 'btn btn-mini btn-danger' %>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  <%= link_to 'Edit', edit_album_path(@album) %> |
+  <a href="javascript: history.go(-1)">Back</a>
+
+</div>
+<div class="span3"><h3>Recommendations</h3>
+
 </div>
 
 
 
-<%= link_to 'Edit', edit_album_path(@album) %> |
-<a href="javascript: history.go(-1)">Back</a>

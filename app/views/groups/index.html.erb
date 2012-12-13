@@ -1,41 +1,46 @@
-
-<div class="page-header">
-  <h1>Bands</h1>
-</div>
-<table class="table table-striped">
-    <thead>
-      <tr>
-		  <th></th>
-        <th>Name</th>
-        <th>Genre</th>
-        <th>Foundation Year</th>
-        <th></th>
-        <th></th>
-        <th></th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-        <% @groups.each do |group| %>
+<div class="span9">
+    <div class="page-header">
+      <h1>Bands</h1>
+    </div>
+    <table class="table table-striped">
+        <thead>
           <tr>
-			  <td><img width="60" height="60" src=<%=group[:cover]%> class="img-rounded"></td> <!-- Dont show to guilherme-->
-            <td><%= group[:name] %></td>
-            <% if group[:genres]!=nil && group[:genres].length > 0 %>
-			<td><%= group[:genres][0..2].join(", ") %></td>
-            <%else%>
-                <td> undefined </td>
-            <%end%>
-             <!-- getting first one only -->
-            <td><%= group[:foundation_year] %></td>
-            <td><%= link_to 'lastFM', group[:lastFMURL] %></td>
-
-            <td>
-                <%= link_to 'Show', "/groups/#{group[:id]}", :class => 'btn btn-mini btn-primary' %>
-                <%= link_to 'Edit', "edit_group_path(group)", :class => 'btn btn-mini' %>
-                <%= link_to 'Destroy', group, :method => :delete, :class => 'btn btn-mini btn-danger', :data => { :confirm => 'Are you sure?' } %>
-            </td>
+    		  <th></th>
+            <th>Name</th>
+            <th>Genre</th>
+            <th>Foundation Year</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
           </tr>
-        <% end %>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            <% @groups.each do |group| %>
+              <tr>
+    			  <td><img width="60" height="60" src=<%=group[:cover]%> class="img-rounded"></td> <!-- Dont show to guilherme-->
+                <td><%= group[:name] %></td>
+                <% if group[:genres]!=nil && group[:genres].length > 0 %>
+    			<td><%= group[:genres][0..2].join(", ") %></td>
+                <%else%>
+                    <td> undefined </td>
+                <%end%>
+                 <!-- getting first one only -->
+                <td><%= group[:foundation_year] %></td>
+                <td><%= link_to 'lastFM', group[:lastFMURL] %></td>
 
+                <td>
+                    <%= link_to 'Show', "/groups/#{group[:id]}", :class => 'btn btn-mini btn-primary' %>
+                    <%= link_to 'Edit', "edit_group_path(group)", :class => 'btn btn-mini' %>
+                    <%= link_to 'Destroy', group, :method => :delete, :class => 'btn btn-mini btn-danger', :data => { :confirm => 'Are you sure?' } %>
+                </td>
+              </tr>
+            <% end %>
+        </tbody>
+    </table>
+</div>
+
+<div class="span3">
+<%= render 'layouts/about_us' %>
+
+</div>
