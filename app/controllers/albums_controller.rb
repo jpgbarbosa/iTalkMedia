@@ -15,8 +15,8 @@ class AlbumsController < ApplicationController
   def show
     @album = Album.get_by_id(params[:id])
     
-    @recommendation = Album.get_recommendation(@album[:genres], @album[:id])
-    ap @recommendation
+    @recommendations = Album.get_recommendation(@album[:genres], @album[:id])
+    ap @recommendations
 
     respond_to do |format|
       format.html # show.html.erb

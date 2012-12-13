@@ -54,7 +54,7 @@ class MusicsController < ApplicationController
       
       puts id_link
       @music = Music.get_by_id(params[:id])
-      @recommendation = Music.get_recommendation( @music[:genres], @music[:id] )
+      @recommendations = Music.get_recommendation( @music[:genres], @music[:id] )
     else
       @music = {:name => "deu erro", :error => "params not valid"}
     end
