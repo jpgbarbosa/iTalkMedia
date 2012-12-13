@@ -142,13 +142,13 @@ class Group < ActiveRecord::Base
         
         place_formed_uri = qs.get("place_formed_id").get_uri
         band[:placeformed] = get_placeformed(place_formed_uri)
-        ap band[:placeformed]
+        #ap band[:placeformed]
         band[:albums] = get_albums(band[:id])
-        ap band[:albums]
+        #ap band[:albums]
         band[:concerts] = get_concerts(band[:id])
-        ap band[:concerts]
+        #ap band[:concerts]
         band[:members] = get_members(band[:id])
-        ap band[:members]
+        #ap band[:members]
         band[:genres] = get_genres(band[:id])
         #band[:similar] = get_lastfm_similar(band[:id])
         
@@ -162,6 +162,50 @@ class Group < ActiveRecord::Base
     end
     
     return bands
+  end
+  
+  def self.get_recommendation(genres, band_id)
+    genres_hash = {}
+    
+    genres.each do |g|
+      genres_hash[g] = 1
+    end
+    
+    recommended = []
+    
+    all_bands = get_all
+    all_bands.each do |band|
+      if band[:id] != band_id
+        count = 0
+        
+        band[:genres].each do |genre|
+          # genre also in the album genre
+          if genres_hash[genre] != nil
+            count += 1
+          end
+        end
+        
+        if count > 0
+          band_rec = {
+            :band => {
+              :id => band[:id],
+              :name => band[:name],
+              :cover => band[:cover]
+            },
+            :count => count
+          }
+          
+          recommended << band_rec
+        end
+      end
+    end
+    
+    # sort by count (descending)
+    recommended.sort! { |band1, band2| band2[:count] <=> band1[:count] }
+    # return the first 5
+    recommended = recommended[0..4]
+    ap recommended
+    return recommended
   end
   
   def self.get_placeformed(place_id)

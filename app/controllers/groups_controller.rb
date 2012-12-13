@@ -16,6 +16,7 @@ class GroupsController < ApplicationController
   # GET /groups/1.json
   def show
     @group = Group.get_by_id(params[:id])
+    @recommendations = Group.get_recommendation( @group[:genres], @group[:id] )
 
     respond_to do |format|
       format.html # show.html.erb

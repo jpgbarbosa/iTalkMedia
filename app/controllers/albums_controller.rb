@@ -3,7 +3,7 @@ class AlbumsController < ApplicationController
   # GET /albums.json
   def index
     @albums = Album.get_all
-
+    
     respond_to do |format|
       format.html # index.html.erb
       format.json { render :json => @albums }
@@ -13,9 +13,10 @@ class AlbumsController < ApplicationController
   # GET /albums/1
   # GET /albums/1.json
   def show
-    puts "----------------- here"
-    puts params[:id] #id que vem com os albuns ver linha 112 da view do show dos groups
     @album = Album.get_by_id(params[:id])
+    
+    @recommendations = Album.get_recommendation(@album[:genres], @album[:id])
+    ap @recommendations
 
     respond_to do |format|
       format.html # show.html.erb

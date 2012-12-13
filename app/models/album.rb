@@ -192,7 +192,7 @@ class Album < ActiveRecord::Base
         if music[:length].to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil
         	music[:length] == "undefined"
         else
-        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60).gsub(' ','0')} mins"
+        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%02d",music[:length].to_i%60)} mins"
         end
 
         musics << music
@@ -240,6 +240,47 @@ class Album < ActiveRecord::Base
       dataset.end()
     end
   end
+  
+  def self.get_recommendation(genres, album_id)
+    genres_hash = {}
+    
+    genres.each do |g|
+      genres_hash[g] = 1
+    end
+    
+    recommended = []
+    
+    all_albums = get_all
+    all_albums.each do |album|
+      if album[:id] != album_id
+        count = 0
+        
+        album[:genres].each do |genre|
+          # genre also in the album genre
+          if genres_hash[genre] != nil
+            count += 1
+          end
+        end
+        
+        if count > 0
+          album_rec = {
+            :album => {
+              :id => album[:id],
+              :name => album[:name],
+              :cover => album[:cover]
+            },
+            :count => count
+          }
+          recommended << album_rec
+        end
+      end
+    end
+    
+    # sort by count (descending)
+    recommended.sort! { |album1, album2| album2[:count]<=>album1[:count] }
+    # return the first 5
+    recommended = recommended[0..4]
 
-
+    return recommended
+  end
 end
