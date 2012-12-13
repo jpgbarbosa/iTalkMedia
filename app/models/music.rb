@@ -43,7 +43,7 @@ class Music < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       query = %q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#> 
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-					    SELECT ?track_id ?track_name ?track_bitrate ?track_lyric ?track_length ?track_num ?track_year ?album ?album_name ?band ?band_name
+					    SELECT ?track_id ?track_name ?track_bitrate ?track_lyric ?track_length ?track_num ?track_year ?album ?album_name ?band ?band_name ?lastPlayed ?playcount
               WHERE {
 	                  ?track_id rdf:type mo:Track ; 
 	                    mo:name ?track_name ; 
@@ -58,6 +58,8 @@ class Music < ActiveRecord::Base
                     ?album rdf:type mo:Album ;
                       mo:name ?album_name .
 	                  OPTIONAL { ?track_id mo:hasLyric ?track_lyric . } .
+                    OPTIONAL { ?track_id mo:lastPlayed ?lastPlayed . } .
+                    OPTIONAL { ?track_id mo:playcount ?playcount . } .
 	                } ORDER BY ?track_id)
         
       query = QueryFactory.create(query)
@@ -81,17 +83,28 @@ class Music < ActiveRecord::Base
         music[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
         music[:album] = qs.get("album_name").string.to_s
         music[:album_id] = qs.get("album").get_uri.to_s.split("#").last
+        
+        if qs.get("lastPlayed")==nil
+          music[:lastPlayed] = ""
+        else
+          music[:lastPlayed] = qs.get("lastPlayed").string.to_s
+        end
+        
+        if qs.get("playcount")==nil
+          music[:playcount] = 0
+        else
+          music[:playcount] = qs.get("playcount").get_int
+        end
+        
 
         if music[:length].to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil
         	music[:length] == "undefined"
         else
-        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60).gsub(' ','0')} mins"
+        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%02d",music[:length].to_i%60)} mins"
         end
 
         #Read genres aside
         music[:genres] = get_genres(music[:id])
-
-        ap music[:genres]
 
         musics << music
 
@@ -114,7 +127,7 @@ class Music < ActiveRecord::Base
     begin
       query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#> 
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-					    SELECT ?track_name ?track_bitrate ?genre_name ?track_lyric ?track_length ?track_num ?track_year ?album ?album_name ?band ?band_name
+					    SELECT ?track_name ?track_bitrate ?genre_name ?track_lyric ?track_length ?track_num ?track_year ?album ?album_name ?band ?band_name ?lastPlayed ?playcount
               WHERE {
 	                  <#{ns+id}> rdf:type mo:Track ;
 	                    mo:name ?track_name ; 
@@ -131,8 +144,10 @@ class Music < ActiveRecord::Base
                       mo:name ?band_name .
                     ?album rdf:type mo:Album ;
                       mo:name ?album_name .
-	                  OPTIONAL { ?track_id mo:hasLyric ?track_lyric . } .
-	                } ORDER BY ?track_id)
+	                  OPTIONAL { <#{ns+id}> mo:hasLyric ?track_lyric . } .
+                    OPTIONAL { <#{ns+id}> mo:lastPlayed ?lastPlayed . } .
+                    OPTIONAL { <#{ns+id}> mo:playcount ?playcount . } .
+	                } )
       
       query = QueryFactory.create(query)
 
@@ -153,11 +168,24 @@ class Music < ActiveRecord::Base
         music[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
         music[:album] = qs.get("album_name").string.to_s
         music[:album_id] = qs.get("album").get_uri.to_s.split("#").last
+        
+        if qs.get("lastPlayed")==nil
+          music[:lastPlayed] = ""
+        else
+          music[:lastPlayed] = qs.get("lastPlayed").string.to_s
+        end
+        
+        if qs.get("playcount")==nil
+          music[:playcount] = 0
+        else
+          music[:playcount] = qs.get("playcount").get_int
+        end
+        
 
         if music[:length].to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil
         	music[:length] == "undefined"
         else
-        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%2d",music[:length].to_i%60).gsub(' ','0')} mins"
+        	music[:length]= "#{music[:length].to_i/60}:#{sprintf("%02d",music[:length].to_i%60)} mins"
         end
 
         music[:genres] = get_genres(id)
@@ -207,6 +235,52 @@ class Music < ActiveRecord::Base
     ensure
       dataset.end()
     end
+  end
+  
+  def self.get_recommendation(genres, track_id)
+    genres_hash = {}
+    
+    genres.each do |g|
+      genres_hash[g] = 1
+    end
+    
+    recommended = []
+    
+    all_tracks = get_all
+    all_tracks.each do |track|
+      if track[:id] != track_id
+        count = 0
+        
+        track[:genres].each do |genre|
+          # genre also in the album genre
+          if genres_hash[genre] != nil
+            count = count+1
+          end
+        end
+        
+        if count > 0
+          plays = track[:playcount]
+          
+          if plays==nil
+            plays = 0
+          end
+          
+          track_rec = {
+            :track => track,
+            :count => count*5 + plays
+          }
+          
+          recommended << track_rec
+        end
+      end
+    end
+    
+    # sort by count (descending)
+    recommended.sort! { |track1, track2| track2[:count] <=> track1[:count] }
+    # return the first 5
+    recommended = recommended[0..4]
+    ap recommended
+    return recommended
   end
 
 
@@ -268,19 +342,19 @@ class Music < ActiveRecord::Base
       ont_p_latitude = ONTOLOGY.get_property(ontology_ns+"latitude")
       ont_p_longitude = ONTOLOGY.get_property(ontology_ns+"longitude")
       ont_p_placeFormed = ONTOLOGY.get_property(ontology_ns+"placeFormed")
-      ont_p_isSimilarTo = ONTOLOGY.get_property(ontology_ns+"isSimilarTo")
-      ont_p_isLastFMSimilar = ONTOLOGY.get_property(ontology_ns+"isLastFMSimilar")
+      ont_p_isSimilarTo = ONTOLOGY.get_ont_property(ontology_ns+"isSimilarTo")
+      ont_p_isLastFMSimilar = ONTOLOGY.get_ont_property(ontology_ns+"isLastFMSimilar")
 			ont_p_lastFMURL = ONTOLOGY.get_property(ontology_ns+"lastFMURL")
 			ont_p_bitrate = ONTOLOGY.get_property(ontology_ns+"bitrate")
 			ont_p_musicalGroup = ONTOLOGY.get_property(ontology_ns+"musicalgroup")
 			ont_p_genre = ONTOLOGY.get_property(ontology_ns+"genre")
-			ont_p_trackcount = ONTOLOGY.get_property(ontology_ns+"trackcount")
-			ont_p_date = ONTOLOGY.get_property(ontology_ns+"date")
-			ont_p_tracknum = ONTOLOGY.get_property(ontology_ns+"tracknum")
-      ont_p_songKickURL = ONTOLOGY.get_property(ontology_ns+"songKickURL")
+			ont_p_trackcount = ONTOLOGY.get_ont_property(ontology_ns+"trackcount")
+			ont_p_date = ONTOLOGY.get_ont_property(ontology_ns+"date")
+			ont_p_tracknum = ONTOLOGY.get_ont_property(ontology_ns+"tracknum")
+      ont_p_songKickURL = ONTOLOGY.get_ont_property(ontology_ns+"songKickURL")
       # iTunes properties
-      ont_p_lastPlayed = ONTOLOGY.get_property(ontology_ns+"lastPlayed")
-      ont_p_playcount = ONTOLOGY.get_property(ontology_ns+"playcount")
+      ont_p_lastPlayed = ONTOLOGY.get_ont_property(ontology_ns+"lastPlayed")
+      ont_p_playcount = ONTOLOGY.get_ont_property(ontology_ns+"playcount")
 	      
       puts "---------\nSIZE: #{data_processed.length}\n--------"
       
@@ -342,7 +416,7 @@ class Music < ActiveRecord::Base
           if !cached_musicbrainz.has_key?(s["name"])
             mbid = MusicBrainz.getBandMBID(s["name"])
             if mbid["success"]
-              sim = model.create_resource(ns+mbid["data"][:id])
+              sim = model.create_resource(ns+mbid["data"][:id], ont_musicalGroup)
               sim.add_property(ont_p_name, s["name"])
               sim.add_property(ont_p_lastFMURL, s["url"])
               sim.add_property(ont_p_hasCover, s["image"].last["#text"])
@@ -354,7 +428,7 @@ class Music < ActiveRecord::Base
             end
           else
             sim_info = cached_musicbrainz[s["name"]]
-            sim = model.create_resource(ns+sim_info[:id])
+            sim = model.create_resource(ns+sim_info[:id], ont_musicalGroup)
             sim.add_property(ont_p_name, s["name"])
             sim.add_property(ont_p_lastFMURL, s["url"])
             sim.add_property(ont_p_hasCover, s["image"].last["#text"])
