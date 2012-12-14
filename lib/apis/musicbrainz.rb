@@ -36,12 +36,12 @@ module MusicBrainz
       return ret_value
     end
     
-    if doc["error"]!=nil
+    if doc["error"] != nil
       ret_value["success"] = false
       ret_value["message"] = doc["error"]["text"][0]
+      
+      return ret_value
     end
-    
-    ap doc
     
     ret_value["success"] = true
     ret_value["data"] = {

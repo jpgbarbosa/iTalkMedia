@@ -13,6 +13,7 @@ require 'lib/jar/javalib/xml-apis-1.4.01.jar'
 
 require 'musicbrainz'
 require 'date'
+require 'CGI'
 
 require 'java'
 
@@ -426,14 +427,21 @@ class Music < ActiveRecord::Base
         end
 	        
         bio_info = group_info["bio"]
-        musical_group.add_property(ont_p_hasBio, bio_info["content"]) #could also be summary
-        musical_group.add_property(ont_p_foundationYear, bio_info["formationlist"]["formation"]["yearfrom"])
-        if bio_info["formationlist"]["formation"]["yearto"]!=nil && bio_info["formationlist"]["formation"]["yearto"] != ""
-          musical_group.add_property(ont_p_endYear, bio_info["formationlist"]["formation"]["yearto"])
+        musical_group.add_property(ont_p_hasBio, bio_info["content"]) #could also be summary (shorter version)
+        if bio_info["formationlist"]["formation"].class == Hash 
+          musical_group.add_property(ont_p_foundationYear, bio_info["formationlist"]["formation"]["yearfrom"])
+          if bio_info["formationlist"]["formation"]["yearto"]!=nil && bio_info["formationlist"]["formation"]["yearto"] != ""
+            musical_group.add_property(ont_p_endYear, bio_info["formationlist"]["formation"]["yearto"])
+          end
+        else # is array
+          musical_group.add_property(ont_p_foundationYear, bio_info["formationlist"]["formation"][0]["yearfrom"])
+          if bio_info["formationlist"]["formation"].last["yearto"]!=nil && bio_info["formationlist"]["formation"].last["yearto"] != ""
+            musical_group.add_property(ont_p_endYear, bio_info["formationlist"]["formation"].last["yearto"])
+          end
         end
 	        
         #- Geocoding Placeformed #
-        placeformed_info = GoogleMapsGeocoding.getPlaceInfo(bio_info["placeformed"])
+        placeformed_info = GoogleMapsGeocoding.getPlaceInfo(CGI.escape(bio_info["placeformed"]))
         if placeformed_info["success"]
           placeformed_info=placeformed_info["data"]
           placeformed = model.create_resource(place_ns+"#{placeformed_info[:lat]}-#{placeformed_info[:lng]}", ont_place)
@@ -486,7 +494,7 @@ class Music < ActiveRecord::Base
           end
         end
         album.add_property(ont_p_name, data[0]["album"])
-        album.add_property(ont_p_trackcount, album_info["tracks"].size)
+        album.add_property(ont_p_trackcount, album_info["tracks"]["track"].size)
         album.add_property(ont_p_lastFMURL, album_info["url"])
         album.add_property(ont_p_hasCover, album_info["image"][-1]["#text"]) #the biggest
 
