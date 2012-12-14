@@ -58,10 +58,8 @@ module ChartLyricsAPI
     element.removeChild(ads.first)
     element.removeChild(ads.last)
     
-    lyric = element.text()
-    
     ret_value["success"] = true
-    ret_value["data"] = lyric
+    ret_value["data"] = element.text()
 
     return ret_value
     

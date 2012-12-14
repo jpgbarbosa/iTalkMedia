@@ -43,6 +43,7 @@ module Extract
 				mp3 = Hash.new
 				songkick = Hash.new
 				lastfm = Hash.new
+        lyrics = Hash.new
 
 				Mp3Info.open(file) do |mp3info|
 
