@@ -75,7 +75,15 @@ class Group < ActiveRecord::Base
       band[:cover] = get_image(ns+band[:id])
       band[:lastFMURL] = qs.get("lastFMURL").string.to_s
       band[:foundation_year] = qs.get("foundation_year").to_s
-      band[:end_year] = qs.get("end_year").to_s
+      
+      end_year = qs.get("end_year")
+      ap end_year
+      if end_year!=nil && end_year.to_s!=""
+        band[:end_year] = end_year
+      else
+        band[:end_year] = "Still active"
+      end
+      
         
       place_formed_uri = qs.get("place_formed_id").get_uri
       band[:placeformed] = get_placeformed(place_formed_uri)
@@ -91,7 +99,7 @@ class Group < ActiveRecord::Base
       #band[:similar] = get_lastfm_similar(band[:id])
         
       #band[:lastfm_similar] = get_similar(band[:id])
-      
+      ap band
       return band
     ensure
       dataset.end()
@@ -138,7 +146,14 @@ class Group < ActiveRecord::Base
         band[:cover] = get_image(band[:id])
         band[:lastFMURL] = qs.get("lastFMURL").string.to_s
         band[:foundation_year] = qs.get("foundation_year").to_s
-        band[:end_year] = qs.get("end_year").to_s
+        
+        end_year = qs.get("end_year")
+        ap end_year
+        if end_year!=nil && end_year.to_s!=""
+          band[:end_year] = end_year
+        else
+          band[:end_year] = "Still active"
+        end
         
         place_formed_uri = qs.get("place_formed_id").get_uri
         band[:placeformed] = get_placeformed(place_formed_uri)

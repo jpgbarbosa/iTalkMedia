@@ -31,6 +31,10 @@ module Extract
 			end
 			
 			puts "Path to search: "+path.to_s
+      
+      cached_lastfm_artist = {}
+      cached_lastfm_album = {}
+      cached_songkick = {}
 
 			files = Dir.glob(path.to_s)
 			
@@ -56,28 +60,44 @@ module Extract
             mp3["year"] = mp3info.tag2.TDRC
           end
 
-
+          artist = mp3["artist"]
 					#LastFM info
-					if mp3["artist"]!=nil
-						lastfm["artist"] = LastFM.getArtist(mp3["artist"])
-
-						if mp3["album"]!=nil
-							lastfm["album"] = LastFM.getAlbum(mp3["artist"],mp3["album"])
+					if artist != nil
+            if cached_lastfm_artist[artist] != nil
+              lastfm["artist"] = cached_lastfm_artist[artist]
+            else
+              lastfm["artist"] = LastFM.getArtist(artist)
+              cached_lastfm_artist[artist] = lastfm["artist"]
+            end
+            
+            album = mp3["album"]
+						if album!=nil
+              if cached_lastfm_album[album]!=nil
+                lastfm["album"] = cached_lastfm_album[album]
+              else
+                lastfm["album"] = LastFM.getAlbum(artist, album)
+                cached_lastfm_album[album] = lastfm["album"]
+              end
 						end
 
 						if mp3["title"]!=nil
-							lastfm["title"] = LastFM.getTrack(mp3["artist"],mp3["title"])
+							lastfm["title"] = LastFM.getTrack(artist, mp3["title"])
 						end
 					end
 
 					#SongKick info
-					if mp3["artist"]!=nil
-						songkick["events"] = SongKick.getEventsForArtist(mp3["artist"],nil,nil)
+					if artist !=nil
+            if cached_songkick[artist] != nil
+              songkick["events"] = cached_songkick[artist]
+            else
+              songkick["events"] = SongKick.getEventsForArtist(artist, nil, nil)
+              cached_songkick[artist] = songkick["events"]
+            end
 					end
 
 					#Lyrics info
-					if mp3["artist"]!=nil && mp3["title"]!=nil
-						lyrics["title"] = ChartLyricsAPI.getLyric(mp3["artist"],mp3["title"])
+					if artist != nil && mp3["title"]!=nil
+						lyrics["title"] = ChartLyricsAPI.getLyric(artist, mp3["title"])
 					end
 
 				end #mp3Info

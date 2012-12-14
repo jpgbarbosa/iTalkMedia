@@ -190,7 +190,7 @@ class Music < ActiveRecord::Base
 
         music[:genres] = get_genres(id)
       end
-
+      ap music
       return music
     ensure
       dataset.end()
@@ -575,7 +575,7 @@ class Music < ActiveRecord::Base
         
       end
 	    
-      model.write(java.lang.System::out, "RDF/XML-ABBREV")
+      #model.write(java.lang.System::out, "RDF/XML-ABBREV")
       
       dataset.commit()
     ensure
