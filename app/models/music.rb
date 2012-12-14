@@ -84,6 +84,12 @@ class Music < ActiveRecord::Base
         music[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
         music[:album] = qs.get("album_name").string.to_s
         music[:album_id] = qs.get("album").get_uri.to_s.split("#").last
+        lyric = qs.get("track_lyric")
+        if lyric==nil
+          music[:lyric] = ""
+        else
+          music[:lyric] = lyric.string.to_s
+        end
         
         if qs.get("lastPlayed")==nil
           music[:lastPlayed] = ""
@@ -169,6 +175,12 @@ class Music < ActiveRecord::Base
         music[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
         music[:album] = qs.get("album_name").string.to_s
         music[:album_id] = qs.get("album").get_uri.to_s.split("#").last
+        lyric = qs.get("track_lyric")
+        if lyric==nil
+          music[:lyric] = ""
+        else
+          music[:lyric] = lyric.string.to_s
+        end
         
         if qs.get("lastPlayed")==nil
           music[:lastPlayed] = ""
@@ -520,19 +532,28 @@ class Music < ActiveRecord::Base
         track.add_property(ont_p_inAlbum, album)
         album.add_property(ont_p_hasTrack, track)
 	        
-        if(data[0]["bitrate"]) != nil
+        if data[0]["bitrate"] != nil
           track.add_property(ont_p_bitrate, data[0]["bitrate"])
         end
 	        
         track.add_property(ont_p_trackLength, data[0]["length"])
         track.add_property(ont_p_year, data[0]["year"])
         track.add_property(ont_p_tracknum, data[0]["tracknum"])
+        
+        #-Lyric
+        if data[3]["title"]["success"]
+          track.add_property(ont_p_hasLyric, data[3]["title"]["data"])
+        end
 	        
         tags = track_info["toptags"]["tag"]
         tags.each do |tag|
-          tag_resource = model.create_resource(tag["url"], ont_genre)
-          tag_resource.add_property(ont_p_name, tag["name"])
-          track.add_property(ont_p_genre, tag_resource)
+          begin
+            tag_resource = model.create_resource(tag["url"].to_s, ont_genre)
+            tag_resource.add_property(ont_p_name, tag["name"])
+            track.add_property(ont_p_genre, tag_resource)
+          rescue Exception => e
+            puts "Invalid TAG!"
+          end
         end
 	        
         # EVENTS INFO #
@@ -550,8 +571,10 @@ class Music < ActiveRecord::Base
 
             place = model.create_resource(place_ns+"#{e["venue"]["id"].to_s}", ont_place)
             place.add_property(ont_p_name, e["venue"]["displayName"])
-            place.add_property(ont_p_latitude, e["location"]["lat"])
-            place.add_property(ont_p_longitude, e["location"]["lng"])
+            if e["location"]["lat"]!=nil && e["location"]["lng"]!=nil
+              place.add_property(ont_p_latitude, e["location"]["lat"])
+              place.add_property(ont_p_longitude, e["location"]["lng"])
+            end
 
             city, country = e["location"]["city"].split(",")
             city.strip!

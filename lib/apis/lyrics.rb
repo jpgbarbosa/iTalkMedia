@@ -1,6 +1,15 @@
 require 'json'
-require 'httparty'
 require 'awesome_print'
+require 'httparty'
+require 'lib/jar/javalib/jsoup-1.7.1.jar'
+require 'CGI'
+
+require 'java'
+
+java_import "org.jsoup.Jsoup"
+java_import "org.jsoup.nodes.Document"
+java_import "org.jsoup.nodes.Element"
+java_import "org.jsoup.select.Elements"
 
 #Return strucure
 # if error => hash with:
@@ -23,67 +32,43 @@ module ChartLyricsAPI
     begin
 			
       url = generateUrl(params)
-      doc = HTTParty.get(url).parsed_response
+      url.gsub!(" ","_")
+      ap url
+      user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.97 Safari/537.11"
+      doc = Jsoup.connect(url).user_agent(user_agent).get()
 
     rescue Exception => e
-
-      #puts e.message
-      #puts e.backtrace.join("\n")
-
+      ap e
       ret_value["success"] = false
       ret_value["message"] = e.message
 
       return ret_value
     end
     
-    if doc["ArrayOfSearchLyricResult"]["SearchLyricResult"] == nil
+    element = doc.select("div.lyricbox").first()
+    if element==nil
       ret_value["success"] = false
-      ret_value["message"] = "ERROR"
-      return ret_value
-    end
-  
-    if doc["ArrayOfSearchLyricResult"]["SearchLyricResult"].length == 0
-      ret_value["success"] = false
-      ret_value["message"] = "ERROR"
-      return ret_value
-    end
-  
-    begin
-      lyricID = doc["ArrayOfSearchLyricResult"]["SearchLyricResult"][0]["LyricId"]
-      lyricCS = doc["ArrayOfSearchLyricResult"]["SearchLyricResult"][0]["LyricChecksum"]
-      params = {:lyricID => lyricID, :lyricCheckSum => lyricCS}
-      url = generateUrl(params, "getLyric")
-      doc = HTTParty.get(url).parsed_response
-    rescue Exception => e
-      #puts e.message
-      #puts e.backtrace.join("\n")
-
-      ret_value["success"] = false
-      ret_value["message"] = e.message
+      ret_value["message"] = "No lyric found!"
 
       return ret_value
     end
-  
+    
+    # REMOVE RINGTONE AD
+    ads = doc.select("div.lyricbox div.rtMatcher")
+    element.removeChild(ads.first)
+    element.removeChild(ads.last)
+    
+    lyric = element.text()
+    
     ret_value["success"] = true
-    ret_value["data"] = doc["GetLyricResult"]["Lyric"]
-  
+    ret_value["data"] = lyric
+
     return ret_value
+    
   end
 
   def self.generateUrl(params, type="Search")
-    if type=="Search"
-      url = "http://api.chartlyrics.com/apiv1.asmx/SearchLyric?" #ENV['BASE_URL_LAST_FM']
-    else
-      url = "http://api.chartlyrics.com/apiv1.asmx/GetLyric?" #ENV['BASE_URL_LAST_FM']
-    end
-	
-
-    params.each do |key,value|
-      value_mod = value.to_s.gsub(' ','%20')
-      url+= '&' + key.to_s + '=' + value_mod.to_s
-    end
-
+    url = "http://lyrics.wikia.com/#{params[:artist].downcase.capitalize}:#{params[:song].downcase}"
     return url
-
   end
 end
