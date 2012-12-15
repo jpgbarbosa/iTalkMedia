@@ -391,13 +391,16 @@ class Music < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-					    SELECT ?concert ?name ?date ?songkick ?lat ?lng ?city_name ?country_name ?venue
+					    SELECT ?concert ?name ?date ?songkick ?lat ?lng ?city_name ?country_name ?venue ?band ?band_name
               WHERE {
 	                  ?concert rdf:type mo:Concert ;
                       mo:date ?date ;
                       mo:name ?name ;
                       mo:songKickURL ?songkick ;
+                      mo:hasPerformance ?band ;
                       mo:inPlace ?place .
+                    ?band rdf:type mo:MusicalGroup ;
+                      mo:name ?band_name .
                     ?place rdf:type mo:Place ;
                       mo:inCity ?city ;
                       mo:inCountry ?country ;
@@ -432,6 +435,8 @@ class Music < ActiveRecord::Base
         concert[:city_name] = qs.get("city_name").string.to_s
         concert[:country_name] = qs.get("country_name").string.to_s
         concert[:venue] = qs.get("venue").string.to_s
+        concert[:group] = qs.get("band_name").string.to_s
+        concert[:group_id] = qs.get("band").get_uri.to_s.split("#").last
         
         concerts << concert
       end
@@ -726,7 +731,7 @@ class Music < ActiveRecord::Base
         
       end
 	    
-      #model.write(java.lang.System::out, "RDF/XML-ABBREV")
+      model.write(java.lang.System::out, "RDF/XML-ABBREV")
       
       dataset.commit()
     ensure

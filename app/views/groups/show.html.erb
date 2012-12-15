@@ -93,7 +93,7 @@
   <div class="accordion-group">
     <div class="accordion-heading">
       <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
-        Albuns
+        Albums
       </a>
     </div>
     <div id="collapseThree" class="accordion-body collapse">
@@ -241,14 +241,14 @@ var popupas = function(id) {
       <% @recommendations.each do |rec| %>
         <%if rec==@recommendations.first%>
             <div class="item active">
-            <img src=<%=rec[:band][:cover]%> alt="">
+            <img style="width:270px;height:250px" src=<%=rec[:band][:cover]%> alt="">
             <div class="carousel-caption">
               <h4><a style="color: #ffffff;" href="/groups/<%= rec[:band][:id] %>"><%=rec[:band][:name]%></a></h4>
             </div>
           </div>  
         <%else%>
           <div class="item">
-            <img src=<%=rec[:band][:cover]%> alt="">
+            <img style="width:270px;height:250px" src=<%=rec[:band][:cover]%> alt="">
             <div class="carousel-caption">
               <h4><a style="color: #ffffff;" href="/groups/<%= rec[:band][:id] %>" ><%=rec[:band][:name]%></a></h4>
             </div>
@@ -258,5 +258,29 @@ var popupas = function(id) {
     </div>
     <a class="left carousel-control" href="#myCarousel" data-slide="prev">‹</a>
     <a class="right carousel-control" href="#myCarousel" data-slide="next">›</a>
+  </div>
+  <h3>Last.fm Similar</h3>
+  <div id="myCarousel_lastfm" class="carousel slide">
+    <div id="carousel-item-container"class="carousel-inner">
+      <% @group[:lastfm_similar].each do |g| %>
+        <%if g==@group[:lastfm_similar].first%>
+            <div class="item active">
+            <img style="width:270px;height:250px" src=<%=g[:cover]%> alt="">
+            <div class="carousel-caption">
+              <h4><a style="color: #ffffff;" href="<%= g[:lastFMURL] %>"><%=g[:name]%></a></h4>
+            </div>
+          </div>  
+        <%else%>
+          <div class="item">
+            <img style="width:270px;height:250px" src=<%=g[:cover]%> alt="">
+            <div class="carousel-caption">
+              <h4><a style="color: #ffffff;" href="<%= g[:lastFMURL] %>" ><%=g[:name]%></a></h4>
+            </div>
+          </div>
+        <%end%>
+      <% end %>
+    </div>
+    <a class="left carousel-control" href="#myCarousel_lastfm" data-slide="prev">‹</a>
+    <a class="right carousel-control" href="#myCarousel_lastfm" data-slide="next">›</a>
   </div>
 </div>
