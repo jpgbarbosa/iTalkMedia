@@ -68,8 +68,11 @@ class Music < ActiveRecord::Base
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
       
+      if !rs.has_next
+        return []
+      end
+      
       genres = []
-
       while rs.has_next
         music = {}
         qs = rs.next
