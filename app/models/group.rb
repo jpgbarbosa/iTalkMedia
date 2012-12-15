@@ -95,9 +95,9 @@ class Group < ActiveRecord::Base
 
       band[:genres] = get_genres(ns+band[:id])
 
-      #band[:similar] = get_lastfm_similar(band[:id])
+      #band[:similar] = get_similar(band[:id])
         
-      #band[:lastfm_similar] = get_similar(band[:id])
+      band[:lastfm_similar] = get_lastfm_similar(ns+band[:id])
       ap band
       return band
     ensure
@@ -383,7 +383,7 @@ class Group < ActiveRecord::Base
       rs = qexec.exec_select
       
       if !rs.has_next
-        return nil
+        return []
       end
       
       concerts = []
@@ -500,18 +500,14 @@ class Group < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-					    SELECT ?similar ?name ?bio ?cover ?lastFMURL ?foundation_year ?place_formed_id ?end_year
+					    SELECT ?similar ?name ?cover ?lastFMURL
               WHERE {
-	                  <#{id}> rdf:type mo:MusicalArtist ;
+	                  <#{id}> rdf:type mo:MusicalGroup ;
                       mo:isLastFMSimilar ?similar .
-                    ?similar rdf:type mo:MusicalArtist ;
+                    ?similar rdf:type mo:MusicalGroup ;
                       mo:name ?name ;
-                      mo:hasBio ?bio ;
                       mo:hasCover ?cover ;
-                      mo:lastFMURL ?lastFMURL ;
-                      mo:foundationYear ?foundation_year ;
-                      mo:placeFormed ?place_formed_id .
-	                  OPTIONAL { ?similar mo:endYear ?end_year . } .
+                      mo:lastFMURL ?lastFMURL .
               })
 
       query = QueryFactory.create(query)
@@ -520,7 +516,7 @@ class Group < ActiveRecord::Base
       rs = qexec.exec_select
       
       if !rs.has_next
-        return nil
+        return []
       end
       
       similars = []
@@ -530,11 +526,8 @@ class Group < ActiveRecord::Base
         similar = {}
         similar[:id] = qs.get("similar").get_uri.to_s.split("#").last
         similar[:name] = qs.get("name").string.to_s
-        similar[:bio] = qs.get("bio").string.to_s
         similar[:cover] = qs.get("cover").string.to_s
         similar[:lastFMURL] = qs.get("lastFMURL").string.to_s
-        similar[:foundation_year] = qs.get("foundation_year").to_s
-        similar[:end_year] = qs.get("end_year").to_s
         
         similars << similar
       end
@@ -556,9 +549,9 @@ class Group < ActiveRecord::Base
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 					    SELECT ?similar ?name ?bio ?cover ?lastFMURL ?foundation_year ?place_formed_id ?end_year
               WHERE {
-	                  <#{id}> rdf:type mo:MusicalArtist ;
+	                  <#{id}> rdf:type mo:MusicalGroup ;
                       mo:isSimilar ?similar .
-                    ?similar rdf:type mo:MusicalArtist ;
+                    ?similar rdf:type mo:MusicalGroup ;
                       mo:name ?name ;
                       mo:hasBio ?bio ;
                       mo:hasCover ?cover ;
