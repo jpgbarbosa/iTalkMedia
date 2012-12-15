@@ -102,14 +102,14 @@
             <div class="item active">
             <img src=<%=rec[:album][:cover]%> alt="">
             <div class="carousel-caption">
-              <h4><%=rec[:album][:name]%></h4>
+              <h4><a style="color: #ffffff;" href="/albums/<%= rec[:album][:id] %>"><%=rec[:album][:name]%></a></h4>
             </div>
           </div>  
         <%else%>
           <div class="item">
             <img src=<%=rec[:album][:cover]%> alt="">
             <div class="carousel-caption">
-              <h4><%=rec[:album][:name]%></h4>
+              <h4><a style="color: #ffffff;" href="/albums/<%= rec[:album][:id] %>"><%=rec[:album][:name]%></a></h4>
             </div>
           </div>
         <%end%>
