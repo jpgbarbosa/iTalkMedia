@@ -312,7 +312,7 @@
           <div class="container">
             <div class="carousel-caption">
               <h1><a style="color:#ffffff" href="/groups/<%=@concerts[:group_id]%>"><%= @concerts[:group] %> </a></h1>
-              <p class="lead">They are coming to "<%=@concerts[:name]%>" at <%=@concerts[:city_name]%>, on <%=@concerts[:date]%>!</p>
+              <p class="lead">They are coming to "<%=@concerts[:name]%>" at <%=@concerts[:city_name]%>, on <%=Date.parse(@concerts[:date]).strftime('%A %-d %B %Y')%>!</p>
               <a class="btn btn-large btn-primary" href="<%=@concerts[:songkick]%>">Check on SongKick </a>
             </div>
           </div>
