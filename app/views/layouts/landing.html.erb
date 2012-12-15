@@ -261,7 +261,7 @@
     <![endif]-->
 
     <!-- Fav and touch icons -->
-                                   <link rel="shortcut icon" href="../assets/ico/favicon.png">
+  <link rel="shortcut icon" href="/assets/favicon.png">
   <style type="text/css"></style>
 </head>
 
@@ -311,7 +311,7 @@
           <img src="/assets/muse_dom.jpg" alt="">
           <div class="container">
             <div class="carousel-caption">
-              <h1><a style="color:#ffffff" href="/groups/<%=@concerts[:group_id]%>"><%= @concerts[:group_name] %> </a></h1>
+              <h1><a style="color:#ffffff" href="/groups/<%=@concerts[:group_id]%>"><%= @concerts[:group] %> </a></h1>
               <p class="lead">They are coming to "<%=@concerts[:name]%>" at <%=@concerts[:city_name]%>, on <%=@concerts[:date]%>!</p>
               <a class="btn btn-large btn-primary" href="<%=@concerts[:songkick]%>">Check on SongKick </a>
             </div>
@@ -329,7 +329,7 @@
           </div>
         </div>
 
-        <div class="item">
+        <!-- <div class="item">
           <img src="/assets/wemb.jpg" alt="">
           <div class="container">
             <div class="carousel-caption">
@@ -338,7 +338,7 @@
               <a class="btn btn-large btn-primary" href="#">Browse gallery</a>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
       <a class="left carousel-control" href="#myCarousel" data-slide="prev">‹</a>
       <a class="right carousel-control" href="#myCarousel" data-slide="next">›</a>
