@@ -77,7 +77,6 @@ class Group < ActiveRecord::Base
       band[:foundation_year] = qs.get("foundation_year").to_s
       
       end_year = qs.get("end_year")
-      ap end_year
       if end_year!=nil && end_year.to_s!=""
         band[:end_year] = end_year
       else
@@ -135,6 +134,10 @@ class Group < ActiveRecord::Base
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
       #ResultSetFormatter.out(rs)
+      
+      if !rs.has_next
+        return []
+      end
 
       while rs.has_next
         band = {}
@@ -148,7 +151,6 @@ class Group < ActiveRecord::Base
         band[:foundation_year] = qs.get("foundation_year").to_s
         
         end_year = qs.get("end_year")
-        ap end_year
         if end_year!=nil && end_year.to_s!=""
           band[:end_year] = end_year
         else

@@ -109,7 +109,7 @@ class Album < ActiveRecord::Base
       rs = qexec.exec_select
       #ResultSetFormatter.out(rs)
       if !rs.has_next
-        return nil
+        return []
       end
       
       albums = []

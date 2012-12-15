@@ -18,7 +18,7 @@
         <tbody>
             <% @groups.each do |group| %>
               <tr>
-    			  <td><img width="60" height="60" src=<%=group[:cover]%> class="img-rounded"></td> <!-- Dont show to guilherme-->
+    			  <td><img style="width:60px;height:60px" src=<%=group[:cover]%> class="img-rounded"></td> <!-- Dont show to guilherme-->
                 <td><%= group[:name] %></td>
                 <% if group[:genres]!=nil && group[:genres].length > 0 %>
     			<td><%= group[:genres][0..2].join(", ") %></td>
