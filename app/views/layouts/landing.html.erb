@@ -307,28 +307,30 @@
     ================================================== -->
     <div id="myCarousel" class="carousel slide">
       <div class="carousel-inner">
+        <div class="item active">
+          <img src="/assets/muse_dom.jpg" alt="">
+          <div class="container">
+            <div class="carousel-caption">
+              <h1><a style="color:#ffffff" href="/groups/<%=@concerts[:group_id]%>"><%= @concerts[:group_name] %> </a></h1>
+              <p class="lead">They are coming to "<%=@concerts[:name]%>" at <%=@concerts[:city_name]%>, on <%=@concerts[:date]%>!</p>
+              <a class="btn btn-large btn-primary" href="<%=@concerts[:songkick]%>">Check on SongKick </a>
+            </div>
+          </div>
+        </div>
+
         <div class="item">
           <img src="/assets/mosaic.jpg" alt="">
           <div class="container">
             <div class="carousel-caption">
-              <h1>Example headline.</h1>
-              <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-              <a class="btn btn-large btn-primary" href="#">Sign up today</a>
+              <h1><a style="color:#ffffff" href="/groups/<%=@old_played[:group_id]%>"><%= @old_played[:artist] %> </a></h1>
+              <p class="lead">How longo don't you listen "<%=@old_played[:name]%>"?</p>
+              <a class="btn btn-large btn-primary" href="/musics/<%=@old_played[:id]%>">Check this song</a>
             </div>
           </div>
         </div>
+
         <div class="item">
           <img src="/assets/wemb.jpg" alt="">
-          <div class="container">
-            <div class="carousel-caption">
-              <h1>Another example headline.</h1>
-              <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-              <a class="btn btn-large btn-primary" href="#">Learn more</a>
-            </div>
-          </div>
-        </div>
-        <div class="item active">
-          <img src="/assets/muse_dom.jpg" alt="">
           <div class="container">
             <div class="carousel-caption">
               <h1>One more for good measure.</h1>

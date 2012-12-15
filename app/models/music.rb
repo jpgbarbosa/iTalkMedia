@@ -334,6 +334,113 @@ class Music < ActiveRecord::Base
     ap recommended
     return recommended
   end
+  
+  def self.get_old_played_songs
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory)
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+              PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              SELECT ?track_id ?name ?band ?band_name ?date
+              WHERE {
+                    ?track_id rdf:type mo:Track ;
+                      mo:name ?name ;
+                      mo:musicalgroup ?band ;
+                      mo:lastPlayed ?date .
+                    ?band rdf:type mo:MusicalGroup ;
+                      mo:name ?band_name .
+              } ORDER BY ?date LIMIT 3 )
+
+      query = QueryFactory.create(query)
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      
+      if !rs.has_next
+        return []
+      end
+      
+      old_played = []
+      while rs.has_next
+        qs = rs.next
+        
+        song = {}
+        song[:id] = qs.get("track_id").get_uri.to_s.split("#").last
+        song[:name] = qs.get("name").string.to_s
+        song[:artist] = qs.get("band_name").string.to_s
+        song[:artist_id] = qs.get("band").get_uri.to_s.split("#").last
+        song[:date] = qs.get("date").string.to_s
+        
+        old_played << song
+      end
+      
+      return old_played
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_upcoming_concerts
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory)
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+					    SELECT ?concert ?name ?date ?songkick ?lat ?lng ?city_name ?country_name ?venue
+              WHERE {
+	                  ?concert rdf:type mo:Concert ;
+                      mo:date ?date ;
+                      mo:name ?name ;
+                      mo:songKickURL ?songkick ;
+                      mo:inPlace ?place .
+                    ?place rdf:type mo:Place ;
+                      mo:inCity ?city ;
+                      mo:inCountry ?country ;
+                      mo:latitude ?lat ;
+                      mo:longitude ?lng .
+                    ?city rdf:type mo:City ;
+                      mo:name ?city_name .
+                    ?country rdf:type mo:Country ;
+                      mo:name ?country_name .
+                    OPTIONAL {?place mo:name ?venue . } .
+              }ORDER BY ?date LIMIT 3)
+
+      query = QueryFactory.create(query)
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      
+      if !rs.has_next
+        return []
+      end
+      
+      concerts = []
+      while rs.has_next
+        qs = rs.next
+        
+        concert = {}
+        concert[:id] = qs.get("concert").to_s.split("#").last
+        concert[:name] = qs.get("name").string.to_s
+        concert[:date] = qs.get("date").to_s
+        concert[:songkick] = qs.get("songkick").string.to_s
+        concert[:lat] = qs.get("lat").float.to_s
+        concert[:lng] = qs.get("lng").float.to_s
+        concert[:city_name] = qs.get("city_name").string.to_s
+        concert[:country_name] = qs.get("country_name").string.to_s
+        concert[:venue] = qs.get("venue").string.to_s
+        
+        concerts << concert
+      end
+      
+      return concerts
+    ensure
+      dataset.end()
+    end
+  end
 
 
  	def self.setJenaInfo(data_processed)
@@ -603,8 +710,11 @@ class Music < ActiveRecord::Base
         
         #--- iTunes INFO ---#
         last_played_date = `osascript -e 'tell application "iTunes" to get played date of track "#{data[0]["title"]}" in playlist "#{data[0]["artist"]}"'`
-        if last_played_date != ""
+        begin
           last_played_date = Date.parse(last_played_date)
+          track.add_property(ont_p_lastPlayed, last_played_date.to_s)
+        rescue
+          last_played_date = Date.parse("2000-11-30")
           track.add_property(ont_p_lastPlayed, last_played_date.to_s)
         end
         
