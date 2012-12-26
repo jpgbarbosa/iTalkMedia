@@ -1,0 +1,37 @@
+<div class="span9">
+    <div class="page-header">
+      <h3>Your Search Results</h3>
+    </div>
+
+    <%if not @searches[:results].empty?%>
+      <table class="table table-striped">
+          <thead>
+            <tr>
+            <th></th>
+              <th>Type</th>
+              <th>Name</th>
+            </tr>
+          </thead>
+          <tbody>
+              <% @searches.each do |search| %>
+                <tr>
+              
+                   <!-- getting first one only -->
+                  <td><%= search[:type] %></td>
+                  <td><%= search[:name] %></td>
+
+                  <td>
+                      <%= link_to 'Show', "/#{search[:type]}/#{search[:id]}", :class => 'btn btn-primary' %>
+                  </td>
+                </tr>
+              <% end %>
+          </tbody>
+      </table>
+    <%else%>
+      No results found for query "<%=@searches[:query]%>"
+    <%end%>
+</div>
+
+<div class="span3">
+  <%= render 'layouts/about_us' %>
+</div>
