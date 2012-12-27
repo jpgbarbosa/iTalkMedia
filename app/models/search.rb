@@ -33,6 +33,7 @@ class Search < ActiveRecord::Base
   # attr_accessible :title, :body
   
   def self.search(terms)
+    get_cenas
     ontology_ns = "http://musicontology.ws.dei.uc.pt/ontology.owl#"
     
     classes = ["Artist", "Album", "City", "Concert", "Country", "Genre", "MusicalGroup", "Place", "Track"]
@@ -82,7 +83,16 @@ class Search < ActiveRecord::Base
       end
     end
     
+    cenas = []
+
+    cenas << get_names(previous_properties)
+
+    ap cenas
+    
     terms_label.each do |label, term_array|
+      term_array.each do |term|
+        
+      end
       if labels[label] == "Artist"
         
       elsif labels[label] == "Album"
@@ -109,35 +119,45 @@ class Search < ActiveRecord::Base
     
     ap terms_label
     
-    #names = get_names(terms)
+    #names = 
     #ap names
     return []
   end
   
   private
   
-  def self.get_names(term)
+  def self.get_names(terms)
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
     begin
       dataset.begin(ReadWrite::READ)
+      
+      add_query = ""
+      terms.each do |term|
+        add_query += " {?id mo:name ?name ;
+                   rdf:type ?type .
+                   FILTER regex(?name, '#{term}', 'i')} "
+        if term != terms.last
+          add_query +=" UNION "
+        end
+      end
+      
       query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-					    SELECT ?name ?id ?type
+					    SELECT ?name ?id ?type (COUNT(*) as ?count)
               WHERE {
-                ?id mo:name ?name ;
-                   rdf:type ?type .
-                FILTER regex(?name, #{term}, "i")
-              })
+                #{add_query}
+              } GROUP BY ?id ?name ?type
+              ORDER BY DESC(?count))
         
       query = QueryFactory.create(query)
 
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
-      #ResultSetFormatter.out(rs)
+      ResultSetFormatter.out(rs)
       
       if !rs.has_next
         return []
@@ -156,6 +176,46 @@ class Search < ActiveRecord::Base
       end
       
       return results
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_cenas
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?id (COUNT(*) as ?count)
+              WHERE {
+                {
+                  ?id mo:genre ?genre ;
+                    rdf:type mo:MusicalGroup .
+                  ?genre mo:name "indie" .
+                }
+                UNION
+                {
+                  ?id mo:genre ?genre ;
+                    rdf:type mo:MusicalGroup .
+                  ?genre mo:name "rock" .
+                }
+              } GROUP BY ?id
+               ORDER BY DESC(?count))
+        
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      ResultSetFormatter.out(rs)
+      
+      if !rs.has_next
+        return []
+      end
     ensure
       dataset.end()
     end
