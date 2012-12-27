@@ -5,6 +5,8 @@ class SearchesController < ApplicationController
     puts params[:search]
 
     @searches = {}
+    
+    Search.search(params[:search])
 
     @searches[:results] = []
     @searches[:query] = params[:search]

@@ -482,7 +482,6 @@ class Music < ActiveRecord::Base
 			ont_musicalGroup = ONTOLOGY.get_ont_class(ontology_ns+"MusicalGroup")
 			ont_place = ONTOLOGY.get_ont_class(ontology_ns+"Place")
 			ont_track = ONTOLOGY.get_ont_class(ontology_ns+"Track")
-      puts ont_track
 	      
       # PROPERTIES #
 			ont_p_name = ONTOLOGY.get_property(ontology_ns+"name")
