@@ -93,6 +93,8 @@ class Search < ActiveRecord::Base
       if labels[label] == "Artist"
         add_result(results, aux)
       elsif labels[label] == "Album"
+        aux = get_album(names)
+        
         add_result(results, aux)
       elsif labels[label] == "City"
         add_result(results, aux)
@@ -109,6 +111,8 @@ class Search < ActiveRecord::Base
       elsif labels[label] == "Place"
         add_result(results, aux)
       elsif labels[label] == "Track"
+        aux = get_tracks(names)
+        
         add_result(results, aux)
       else
         puts "DEU BODE"
@@ -264,6 +268,168 @@ class Search < ActiveRecord::Base
       end
       ap artists
       return artists
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_album(terms)
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      
+      add_query = ""
+      filtered_terms = []
+      terms.each do |term|
+        if term[:type].end_with?("Genre") || term[:type].end_with?("MusicalGroup") || term[:type].end_with?("Album")
+          filtered_terms << term
+        end
+      end
+      filtered_terms.each do |term|
+        if term[:type].end_with?("Genre")
+          add_query += " { ?id mo:genre <#{term[:id]}> ; rdf:type mo:Album ; mo:name ?name . } "
+        elsif term[:type].end_with?("MusicalGroup")
+          add_query += " { ?id mo:musicalgroup <#{term[:id]}> ; rdf:type mo:Album ; mo:name ?name . } "
+        elsif term[:type].end_with?("Album")
+          add_query += " { ?id rdf:type mo:Album ; mo:name '#{term[:name]}' ; mo:name ?name . } "
+        end
+        
+        if term != filtered_terms.last
+          add_query += " UNION "
+        end
+      end
+      
+      if terms.size > 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id (COUNT(*) as ?count)
+              WHERE {
+                #{add_query}
+              } GROUP BY ?id ?name
+              ORDER BY DESC(?count))
+              puts query
+      else
+        puts "here"
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id (COUNT(*) as ?count)
+              WHERE {
+                ?id rdf:type mo:Album ;
+                  mo:name ?name ;
+              }GROUP BY ?id ?name)
+      end
+        
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      #ResultSetFormatter.out(rs)
+      
+      if !rs.has_next
+        return []
+      end
+      
+      albums = []
+      while rs.has_next
+        qs = rs.next
+        
+        album = {}
+        album[:id] = qs.get("id").get_uri.to_s.split("#").last
+        album[:name] = qs.get("name").string
+        album[:type] = "albums"
+        album[:count] = qs.get("count").int
+        albums << album
+      end
+      ap albums
+      return albums
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_tracks(terms)
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      
+      add_query = ""
+      filtered_terms = []
+      terms.each do |term|
+        if term[:type].end_with?("Genre") || term[:type].end_with?("MusicalGroup") || term[:type].end_with?("Album") || term[:type].end_with?("Track")
+          filtered_terms << term
+        end
+      end
+      filtered_terms.each do |term|
+        if term[:type].end_with?("Genre")
+          add_query += " { ?id mo:genre <#{term[:id]}> ; rdf:type mo:Track ; mo:name ?name . } "
+        elsif term[:type].end_with?("MusicalGroup")
+          add_query += " { <#{term[:id]}> rdf:type mo:MusicalGroup ; mo:hasAlbum ?album . ?album rdf:type mo:Album ; mo:hasTrack ?id . ?id mo:name ?name . } "
+        elsif term[:type].end_with?("Album")
+          add_query += " { <#{term[:id]}> rdf:type mo:Album ; mo:hasTrack ?id . ?id rdf:type mo:Track ; mo:name ?name . } "
+        elsif term[:type].end_with?("Track")
+          add_query += " { ?id rdf:type mo:Track ; mo:name '#{term[:name]}' ; mo:name ?name . } "
+        end
+        
+        if term != filtered_terms.last
+          add_query += " UNION "
+        end
+      end
+      
+      if terms.size > 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id (COUNT(*) as ?count)
+              WHERE {
+                #{add_query}
+              } GROUP BY ?id ?name
+              ORDER BY DESC(?count))
+              puts query
+      else
+        puts "here"
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id (COUNT(*) as ?count)
+              WHERE {
+                ?id rdf:type mo:Track ;
+                  mo:name ?name ;
+              }GROUP BY ?id ?name)
+      end
+        
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      #ResultSetFormatter.out(rs)
+      
+      if !rs.has_next
+        return []
+      end
+      
+      tracks = []
+      while rs.has_next
+        qs = rs.next
+        
+        track = {}
+        track[:id] = qs.get("id").get_uri.to_s.split("#").last
+        track[:name] = qs.get("name").string
+        track[:type] = "musics"
+        track[:count] = qs.get("count").int
+        tracks << track
+      end
+      ap tracks
+      return tracks
     ensure
       dataset.end()
     end
