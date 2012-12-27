@@ -6,9 +6,8 @@ class SearchesController < ApplicationController
 
     @searches = {}
     
-    Search.search(params[:search])
-
-    @searches[:results] = []
+    @searches[:results] = Search.search(params[:search])
+  
     @searches[:query] = params[:search]
 
     respond_to do |format|

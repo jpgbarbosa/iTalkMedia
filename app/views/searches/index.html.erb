@@ -7,13 +7,13 @@
       <table class="table table-striped">
           <thead>
             <tr>
-            <th></th>
               <th>Type</th>
               <th>Name</th>
+			  <th></th>
             </tr>
           </thead>
           <tbody>
-              <% @searches.each do |search| %>
+              <% @searches[:results].each do |search| %>
                 <tr>
               
                    <!-- getting first one only -->

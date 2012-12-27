@@ -33,7 +33,7 @@ class Search < ActiveRecord::Base
   # attr_accessible :title, :body
   
   def self.search(terms)
-    get_cenas
+    #get_cenas
     ontology_ns = "http://musicontology.ws.dei.uc.pt/ontology.owl#"
     
     classes = ["Artist", "Album", "City", "Concert", "Country", "Genre", "MusicalGroup", "Place", "Track"]
@@ -83,48 +83,61 @@ class Search < ActiveRecord::Base
       end
     end
     
-    cenas = []
-
-    cenas << get_names(previous_properties)
-
-    ap cenas
-    
+    results = {}
     terms_label.each do |label, term_array|
-      term_array.each do |term|
-        
+      names = []
+      if term_array!=[]
+        names = get_names(term_array)
       end
+      
       if labels[label] == "Artist"
-        
+        add_result(results, aux)
       elsif labels[label] == "Album"
-        
+        add_result(results, aux)
       elsif labels[label] == "City"
-        
+        add_result(results, aux)
       elsif labels[label] == "Concert"
-        
+        add_result(results, aux)
       elsif labels[label] == "Country"
-        
+        add_result(results, aux)
       elsif labels[label] == "Genre"
-        
+        add_result(results, aux)
       elsif labels[label] == "MusicalGroup"
-      
-      elsif labels[label] == "Place"
-      
-      elsif labels[label] == "Track"
+        aux = get_musicalgroup(names)
         
+        add_result(results, aux)
+      elsif labels[label] == "Place"
+        add_result(results, aux)
+      elsif labels[label] == "Track"
+        add_result(results, aux)
       else
         puts "DEU BODE"
       end
     end
     
     
-    ap terms_label
+    sorted_results = []
+    results.each do |k,v|
+      sorted_results << v
+    end
     
-    #names = 
-    #ap names
-    return []
+    sorted_results.sort! { |id1, id2| id2[:count] <=> id1[:count] }
+    ap sorted_results
+    
+    return sorted_results
   end
   
   private
+  
+  def self.add_result(results, aux)
+    aux.each do |r|
+      if results[r[:id]]!=nil
+        results[r[:id]][:count] += r[:count]
+      else
+        results[r[:id]] = r
+      end
+    end
+  end
   
   def self.get_names(terms)
     directory = "music_database"
@@ -139,7 +152,7 @@ class Search < ActiveRecord::Base
                    rdf:type ?type .
                    FILTER regex(?name, '#{term}', 'i')} "
         if term != terms.last
-          add_query +=" UNION "
+          add_query += " UNION "
         end
       end
       
@@ -157,7 +170,7 @@ class Search < ActiveRecord::Base
 
       qexec = QueryExecutionFactory.create(query, dataset)
       rs = qexec.exec_select
-      ResultSetFormatter.out(rs)
+      #ResultSetFormatter.out(rs)
       
       if !rs.has_next
         return []
@@ -167,15 +180,90 @@ class Search < ActiveRecord::Base
       while rs.has_next
         qs = rs.next
         
-        result = []
-        result[0] = qs.get("name").string
-        result[1] = qs.get("id").get_uri.to_s
-        result[2] = qs.get("type").get_uri.to_s
+        result = {}
+        result[:name] = qs.get("name").string
+        result[:id] = qs.get("id").get_uri.to_s
+        result[:type] = qs.get("type").get_uri.to_s
+        result[:count] = qs.get("count").int
         
         results << result
       end
       
       return results
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_musicalgroup(terms)
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      
+      add_query = ""
+      terms.each do |term|
+        if term[:type].end_with?("Genre")
+          add_query += " { ?id mo:genre <#{term[:id]}> ; rdf:type mo:MusicalGroup ; mo:name ?name . } "
+        elsif term[:type].end_with?("Place")
+          add_query += " { ?id mo:placeFormed <#{term[:id]}> ; rdf:type mo:MusicalGroup ; mo:name ?name . } "
+        elsif term[:type].end_with?("Concert")
+          add_query += " { ?id mo:hasConcert <#{term[:id]}> ; rdf:type mo:MusicalGroup ; mo:name ?name . } "
+        end
+        
+        if term != terms.last
+          add_query += " UNION "
+        end
+      end
+      
+      if terms.size > 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id (COUNT(*) as ?count)
+              WHERE {
+                #{add_query}
+              } GROUP BY ?id ?name
+              ORDER BY DESC(?count))
+      else
+        puts "here"
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id (COUNT(*) as ?count)
+              WHERE {
+                ?id rdf:type mo:MusicalGroup ;
+                  mo:name ?name ;
+                  mo:hasBio ?bio .
+              }GROUP BY ?id ?name)
+      end
+        
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      #ResultSetFormatter.out(rs)
+      
+      if !rs.has_next
+        return []
+      end
+      
+      artists = []
+      while rs.has_next
+        qs = rs.next
+        
+        artist = {}
+        artist[:id] = qs.get("id").get_uri.to_s.split("#").last
+        artist[:name] = qs.get("name").string
+        artist[:type] = "groups"
+        artist[:count] = qs.get("count").int
+        artists << artist
+      end
+      ap artists
+      return artists
     ensure
       dataset.end()
     end
