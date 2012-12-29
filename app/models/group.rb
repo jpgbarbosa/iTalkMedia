@@ -98,7 +98,7 @@ class Group < ActiveRecord::Base
       #band[:similar] = get_similar(band[:id])
         
       band[:lastfm_similar] = get_lastfm_similar(ns+band[:id])
-      ap band
+      #ap band
       return band
     ensure
       dataset.end()

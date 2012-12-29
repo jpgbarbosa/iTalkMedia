@@ -71,7 +71,7 @@ class Search < ActiveRecord::Base
         end
         
       else # is property
-        if not previous_label.empty?
+        unless previous_label.empty?
           previous_label.each do |label|
             terms_label[label] << term
           end
@@ -91,6 +91,8 @@ class Search < ActiveRecord::Base
       end
       
       if labels[label] == "Artist"
+        aux = get_artist(names)
+        
         add_result(results, aux)
       elsif labels[label] == "Album"
         aux = get_album(names)
@@ -99,6 +101,8 @@ class Search < ActiveRecord::Base
       elsif labels[label] == "City"
         add_result(results, aux)
       elsif labels[label] == "Concert"
+        aux = get_concerts(names)
+        
         add_result(results, aux)
       elsif labels[label] == "Country"
         add_result(results, aux)
@@ -106,6 +110,7 @@ class Search < ActiveRecord::Base
         add_result(results, aux)
       elsif labels[label] == "MusicalGroup"
         aux = get_musicalgroup(names)
+        ap names
         
         add_result(results, aux)
       elsif labels[label] == "Place"
@@ -117,6 +122,25 @@ class Search < ActiveRecord::Base
       else
         puts "DEU BODE"
       end
+    end
+    
+    unless previous_properties.empty?
+      names = get_names(previous_properties)
+      
+      aux = get_musicalgroup(names)
+      add_result(results, aux)
+      
+      aux = get_artist(names)
+      add_result(results, aux)
+      
+      aux = get_album(names)
+      add_result(results, aux)
+      
+      aux = get_tracks(names)
+      add_result(results, aux)
+      
+      aux = get_concerts(names)
+      add_result(results, aux)
     end
     
     
@@ -184,6 +208,10 @@ class Search < ActiveRecord::Base
       while rs.has_next
         qs = rs.next
         
+        if qs.get("count").int == 0
+          return []
+        end
+        
         result = {}
         result[:name] = qs.get("name").string
         result[:id] = qs.get("id").get_uri.to_s
@@ -207,21 +235,34 @@ class Search < ActiveRecord::Base
       dataset.begin(ReadWrite::READ)
       
       add_query = ""
+      filtered_terms = []
       terms.each do |term|
+        if term[:type].end_with?("Genre") || term[:type].end_with?("Place") || term[:type].end_with?("MusicalGroup") || term[:type].end_with?("City") || term[:type].end_with?("Country") || term[:type].end_with?("Artist")
+          filtered_terms << term
+        end
+      end
+      ap filtered_terms
+      filtered_terms.each do |term|
         if term[:type].end_with?("Genre")
           add_query += " { ?id mo:genre <#{term[:id]}> ; rdf:type mo:MusicalGroup ; mo:name ?name . } "
         elsif term[:type].end_with?("Place")
           add_query += " { ?id mo:placeFormed <#{term[:id]}> ; rdf:type mo:MusicalGroup ; mo:name ?name . } "
-        elsif term[:type].end_with?("Concert")
-          add_query += " { ?id mo:hasConcert <#{term[:id]}> ; rdf:type mo:MusicalGroup ; mo:name ?name . } "
+        elsif term[:type].end_with?("City")
+          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:placeFormed ?place ; mo:name ?name ; mo:hasBio ?bio . ?place rdf:type mo:Place ; mo:inCity <#{term[:id]}> . } "
+        elsif term[:type].end_with?("Country")
+          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:placeFormed ?place ; mo:name ?name ; mo:hasBio ?bio . ?place rdf:type mo:Place ; mo:inCountry <#{term[:id]}> . } "
+        elsif term[:type].end_with?("MusicalGroup")
+          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:name '#{term[:name]}' ; mo:name ?name ; mo:hasBio ?bio . } "
+        elsif term[:type].end_with?("Artist")
+          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:name ?name ; mo:hasBio ?bio ; mo:hasArtist <#{term[:id]}> . } "
         end
         
-        if term != terms.last
+        if term != filtered_terms.last
           add_query += " UNION "
         end
       end
       
-      if terms.size > 0
+      if filtered_terms.size > 0
         query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -229,10 +270,9 @@ class Search < ActiveRecord::Base
 					    SELECT ?name ?id (COUNT(*) as ?count)
               WHERE {
                 #{add_query}
-              } GROUP BY ?id ?name
+              }GROUP BY ?id ?name
               ORDER BY DESC(?count))
       else
-        puts "here"
         query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -244,7 +284,7 @@ class Search < ActiveRecord::Base
                   mo:hasBio ?bio .
               }GROUP BY ?id ?name)
       end
-        
+
       query = QueryFactory.create(query)
 
       qexec = QueryExecutionFactory.create(query, dataset)
@@ -258,6 +298,10 @@ class Search < ActiveRecord::Base
       artists = []
       while rs.has_next
         qs = rs.next
+        
+        if qs.get("count").int == 0
+          return []
+        end
         
         artist = {}
         artist[:id] = qs.get("id").get_uri.to_s.split("#").last
@@ -291,7 +335,7 @@ class Search < ActiveRecord::Base
         if term[:type].end_with?("Genre")
           add_query += " { ?id mo:genre <#{term[:id]}> ; rdf:type mo:Album ; mo:name ?name . } "
         elsif term[:type].end_with?("MusicalGroup")
-          add_query += " { ?id mo:musicalgroup <#{term[:id]}> ; rdf:type mo:Album ; mo:name ?name . } "
+          add_query += " { ?id rdf:type mo:Album ; mo:musicalgroup <#{term[:id]}> ; mo:name ?name . } "
         elsif term[:type].end_with?("Album")
           add_query += " { ?id rdf:type mo:Album ; mo:name '#{term[:name]}' ; mo:name ?name . } "
         end
@@ -301,7 +345,7 @@ class Search < ActiveRecord::Base
         end
       end
       
-      if terms.size > 0
+      if filtered_terms.size > 0
         query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -338,6 +382,10 @@ class Search < ActiveRecord::Base
       albums = []
       while rs.has_next
         qs = rs.next
+        
+        if qs.get("count").int == 0
+          return []
+        end
         
         album = {}
         album[:id] = qs.get("id").get_uri.to_s.split("#").last
@@ -383,7 +431,7 @@ class Search < ActiveRecord::Base
         end
       end
       
-      if terms.size > 0
+      if filtered_terms.size > 0
         query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -421,6 +469,10 @@ class Search < ActiveRecord::Base
       while rs.has_next
         qs = rs.next
         
+        if qs.get("count").int == 0
+          return []
+        end
+        
         track = {}
         track[:id] = qs.get("id").get_uri.to_s.split("#").last
         track[:name] = qs.get("name").string
@@ -430,6 +482,179 @@ class Search < ActiveRecord::Base
       end
       ap tracks
       return tracks
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_concerts(terms)
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      
+      add_query = ""
+      filtered_terms = []
+      terms.each do |term|
+        if term[:type].end_with?("MusicalGroup") || term[:type].end_with?("Concert") || term[:type].end_with?("City") || term[:type].end_with?("Country")
+          filtered_terms << term
+        end
+      end
+      filtered_terms.each do |term|
+        if term[:type].end_with?("Concert")
+          add_query += " { ?id rdf:type mo:Concert ; mo:name '#{term[:name]}' ; mo:name ?name ; mo:songKickURL ?url . } "
+        elsif term[:type].end_with?("MusicalGroup")
+          add_query += " { ?id rdf:type mo:Concert ; mo:hasPerformance <#{term[:id]}> ; mo:name ?name ; mo:songKickURL ?url . } "
+        elsif term[:type].end_with?("City")
+          add_query += " { ?id rdf:type mo:Concert ; mo:inPlace ?place ; mo:name ?name ; mo:songKickURL ?url . ?place mo:inCity <#{term[:id]}> . } "
+        elsif term[:type].end_with?("Country")
+          add_query += " { ?id rdf:type mo:Concert ; mo:inPlace ?place ; mo:name ?name ; mo:songKickURL ?url . ?place mo:inCountry <#{term[:id]}> . } "
+        end
+        
+        if term != filtered_terms.last
+          add_query += " UNION "
+        end
+      end
+      
+      if filtered_terms.size > 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id ?url (COUNT(*) as ?count)
+              WHERE {
+                #{add_query}
+              } GROUP BY ?id ?name ?url
+              ORDER BY DESC(?count))
+              puts query
+      else
+        puts "here"
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id ?url (COUNT(*) as ?count)
+              WHERE {
+                ?id rdf:type mo:Concert ; mo:songKickURL ?url ;
+                  mo:name ?name ;
+              }GROUP BY ?id ?name ?url
+              ORDER BY DESC(?count))
+      end
+        
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      #ResultSetFormatter.out(rs)
+      
+      if !rs.has_next
+        return []
+      end
+      
+      concerts = []
+      while rs.has_next
+        qs = rs.next
+        
+        if qs.get("count").int == 0
+          return []
+        end
+        
+        concert = {}
+        concert[:id] = qs.get("id").get_uri.to_s.split("#").last
+        concert[:name] = qs.get("name").string
+        concert[:type] = "Concert"
+        concert[:url] = qs.get("url").string
+        concert[:count] = qs.get("count").int
+        concerts << concert
+      end
+      ap concerts
+      return concerts
+    ensure
+      dataset.end()
+    end
+  end
+  
+  
+  def self.get_artist(terms)
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      
+      add_query = ""
+      filtered_terms = []
+      terms.each do |term|
+        if term[:type].end_with?("MusicalGroup") || term[:type].end_with?("Artist")
+          filtered_terms << term
+        end
+      end
+      filtered_terms.each do |term|
+        if term[:type].end_with?("MusicalGroup")
+          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:name '#{term[:name]}' ; mo:hasArtist ?artist . ?artist rdf:type mo:Artist ; mo:name ?name . } "
+        elsif term[:type].end_with?("Artist")
+          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:hasArtist <#{term[:id]}> ; mo:hasArtist ?artist . ?artist rdf:type mo:Artist ; mo:name ?name . } "
+        end
+        
+        if term != filtered_terms.last
+          add_query += " UNION "
+        end
+      end
+      
+      if filtered_terms.size > 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id ?artist (COUNT(*) as ?count)
+              WHERE {
+                #{add_query}
+              } GROUP BY ?artist ?id ?name
+              ORDER BY DESC(?count))
+              puts query
+      else
+        puts "here"
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id ?artist (COUNT(*) as ?count)
+              WHERE {
+                ?id rdf:type mo:MusicalGroup ; mo:hasArtist ?artist . 
+                  ?artist rdf:type mo:Artist ; mo:name ?name .
+              }GROUP BY ?artist ?id ?name
+              ORDER BY DESC(?count))
+      end
+        
+      query = QueryFactory.create(query)
+
+      qexec = QueryExecutionFactory.create(query, dataset)
+      rs = qexec.exec_select
+      #ResultSetFormatter.out(rs)
+      
+      if !rs.has_next
+        return []
+      end
+      
+      artists = []
+      while rs.has_next
+        qs = rs.next
+        
+        if qs.get("count").int == 0
+          return []
+        end
+        
+        artist = {}
+        artist[:group_id] = qs.get("id").get_uri.to_s.split("#").last
+        artist[:id] = qs.get("artist").get_uri.to_s.split("#").last
+        artist[:name] = qs.get("name").string
+        artist[:type] = "Artist"
+        artist[:count] = 1
+        artists << artist
+      end
+      ap artists
+      return artists
     ensure
       dataset.end()
     end

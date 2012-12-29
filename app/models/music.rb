@@ -494,7 +494,7 @@ class Music < ActiveRecord::Base
 			ont_p_hasLabel = ONTOLOGY.get_property(ontology_ns+"hasLabel")
 			ont_p_hasTrack = ONTOLOGY.get_property(ontology_ns+"hasTrack")
       ont_p_hasCover = ONTOLOGY.get_ont_property(ontology_ns+"hasCover")
-      ont_p_hasBio = ONTOLOGY.get_property(ontology_ns+"hasBio")
+      ont_p_hasBio = ONTOLOGY.get_ont_property(ontology_ns+"hasBio").as_functional_property
       ont_p_hasPerformance = ONTOLOGY.get_property(ontology_ns+"hasPerformance")
       ont_p_hasConcert = ONTOLOGY.get_property(ontology_ns+"hasConcert")
 			ont_p_trackLength = ONTOLOGY.get_property(ontology_ns+"tracklength")
@@ -539,13 +539,13 @@ class Music < ActiveRecord::Base
         if (members = getSafeField(group_info,["bandmembers","member"]))!=nil
           if members.class == Array
             members.each do |member|
-              member_resource = model.create_resource(ns+group_info["name"]+"/"+member["name"], ont_artist)
+              member_resource = model.create_resource(ns+group_info["name"].gsub(' ','+')+"/"+member["name"].gsub(' ','+'), ont_artist)
               member_resource.add_property(ont_p_name, member["name"])
               musical_group.add_property(ont_p_hasArtist, member_resource)
               member_resource.add_property(ont_p_musicalGroup, musical_group)
             end
           else # is Hash
-            member_resource = model.create_resource(ns+group_info["name"]+"/"+members["name"], ont_artist)
+            member_resource = model.create_resource(ns+group_info["name"].gsub(' ','+')+"/"+members["name"].gsub(' ','+'), ont_artist)
             member_resource.add_property(ont_p_name, members["name"])
             musical_group.add_property(ont_p_hasArtist, member_resource)
             member_resource.add_property(ont_p_musicalGroup, musical_group)
@@ -578,9 +578,9 @@ class Music < ActiveRecord::Base
         if placeformed_info["success"]
           placeformed_info=placeformed_info["data"]
           placeformed = model.create_resource(place_ns+"#{placeformed_info[:lat]}-#{placeformed_info[:lng]}", ont_place)
-          placeformed_city = model.create_resource(place_ns+"#{placeformed_info[:city]}", ont_city)
+          placeformed_city = model.create_resource(place_ns+"#{placeformed_info[:city].gsub(' ', '+')}", ont_city)
           placeformed_city.add_property(ont_p_name, placeformed_info[:city])
-          placeformed_country = model.create_resource(place_ns+"#{placeformed_info[:country]}", ont_country)
+          placeformed_country = model.create_resource(place_ns+"#{placeformed_info[:country].gsub(' ', '+')}", ont_country)
           placeformed_country.add_property(ont_p_name, placeformed_info[:country])
           placeformed.add_property(ont_p_inCity, placeformed_city).add_property(ont_p_inCountry, placeformed_country)
           placeformed.add_property(ont_p_latitude, placeformed_info[:lat]).add_property(ont_p_longitude, placeformed_info[:lng])
@@ -667,7 +667,11 @@ class Music < ActiveRecord::Base
         end
 	        
         tags = track_info["toptags"]["tag"]
+        if tags == nil
+          tags = []
+        end
         tags.each do |tag|
+          puts tag
           begin
             tag_resource = model.create_resource(tag["url"].to_s, ont_genre)
             tag_resource.add_property(ont_p_name, tag["name"])

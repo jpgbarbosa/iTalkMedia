@@ -19,10 +19,19 @@
                    <!-- getting first one only -->
                   <td><%= search[:type] %></td>
                   <td><%= search[:name] %></td>
-
+				  <% if search[:type] == "Concert" %>
+                  <td>
+                      <%= link_to 'Show', search[:url], :class => 'btn btn-primary' %>
+                  </td>
+				  <% elsif search[:type] == "Artist" %>
+                  <td>
+                      <%= link_to 'Show', "/groups/#{search[:group_id]}", :class => 'btn btn-primary' %>
+                  </td>
+				  <% else %>
                   <td>
                       <%= link_to 'Show', "/#{search[:type]}/#{search[:id]}", :class => 'btn btn-primary' %>
                   </td>
+				  <% end %>
                 </tr>
               <% end %>
           </tbody>
