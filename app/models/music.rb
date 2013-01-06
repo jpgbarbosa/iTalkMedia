@@ -98,6 +98,7 @@ class Music < ActiveRecord::Base
           music[:lastPlayed] = ""
         else
           music[:lastPlayed] = qs.get("lastPlayed").string.to_s
+          music[:lastPlayed] = Date.parse(music[:lastPlayed]).strftime('%A %-d %B %Y')
         end
         
         if qs.get("playcount")==nil
@@ -189,6 +190,7 @@ class Music < ActiveRecord::Base
           music[:lastPlayed] = ""
         else
           music[:lastPlayed] = qs.get("lastPlayed").string.to_s
+          music[:lastPlayed] = Date.parse(music[:lastPlayed]).strftime('%A, %-d %B %Y')
         end
         
         if qs.get("playcount")==nil
@@ -494,7 +496,7 @@ class Music < ActiveRecord::Base
 			ont_p_hasLabel = ONTOLOGY.get_property(ontology_ns+"hasLabel")
 			ont_p_hasTrack = ONTOLOGY.get_property(ontology_ns+"hasTrack")
       ont_p_hasCover = ONTOLOGY.get_ont_property(ontology_ns+"hasCover")
-      ont_p_hasBio = ONTOLOGY.get_ont_property(ontology_ns+"hasBio").as_functional_property
+      ont_p_hasBio = ONTOLOGY.get_ont_property(ontology_ns+"hasBio")
       ont_p_hasPerformance = ONTOLOGY.get_property(ontology_ns+"hasPerformance")
       ont_p_hasConcert = ONTOLOGY.get_property(ontology_ns+"hasConcert")
 			ont_p_trackLength = ONTOLOGY.get_property(ontology_ns+"tracklength")
@@ -534,6 +536,10 @@ class Music < ActiveRecord::Base
 	        
         musical_group.add_property(ont_p_name, data[0]["artist"])
         musical_group.add_property(ont_p_lastFMURL, group_info["url"])
+        
+        if musical_group.has_property(ont_p_hasCover) && ont_p_hasCover.is_functional_property # hasCover is a functional property
+          musical_group.remove_all(ont_p_hasCover)
+        end
         musical_group.add_property(ont_p_hasCover, group_info["image"][-1]["#text"]) #the biggest
 
         if (members = getSafeField(group_info,["bandmembers","member"]))!=nil
@@ -560,7 +566,11 @@ class Music < ActiveRecord::Base
         end
 	        
         bio_info = group_info["bio"]
+        if musical_group.has_property(ont_p_hasBio) && ont_p_hasBio.is_functional_property # hasBio is a functional property
+          musical_group.remove_all(ont_p_hasBio)
+        end
         musical_group.add_property(ont_p_hasBio, bio_info["content"]) #could also be summary (shorter version)
+        
         if bio_info["formationlist"]["formation"].class == Hash 
           musical_group.add_property(ont_p_foundationYear, bio_info["formationlist"]["formation"]["yearfrom"])
           if bio_info["formationlist"]["formation"]["yearto"]!=nil && bio_info["formationlist"]["formation"]["yearto"] != ""
@@ -720,6 +730,9 @@ class Music < ActiveRecord::Base
         last_played_date = `osascript -e 'tell application "iTunes" to get played date of track "#{data[0]["title"]}" in playlist "#{data[0]["artist"]}"'`
         begin
           last_played_date = Date.parse(last_played_date)
+          if track.has_property(ont_p_lastPlayed) && ont_p_lastPlayed.is_functional_property
+            track.remove_all(ont_p_lastPlayed)
+          end
           track.add_property(ont_p_lastPlayed, last_played_date.to_s)
         rescue
           last_played_date = Date.parse("2000-11-30")
@@ -729,12 +742,24 @@ class Music < ActiveRecord::Base
         played_count = `osascript -e 'tell application "iTunes" to get played count of track "#{data[0]["title"]}" in playlist "#{data[0]["artist"]}"'`
         if played_count != ""
           played_count = played_count.to_i
+          if track.has_property(ont_p_playcount) && ont_p_playcount.is_functional_property
+            track.remove_all(ont_p_playcount)
+          end
           track.add_property(ont_p_playcount, played_count)
         end
         
       end
 	    
       #model.write(java.lang.System::out, "RDF/XML-ABBREV")
+      
+      iterator = model.list_statements()
+      ctr = 0
+      while iterator.has_next
+        ctr+=1
+        iterator.next
+      end
+      
+      puts ctr
       
       dataset.commit()
     ensure
