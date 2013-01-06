@@ -62,10 +62,11 @@ class Search < ActiveRecord::Base
         end
       end
     end
+    p "Properties"
     ap properties_query
     
     # CLASS LABELS
-    classes = ["Artist", "Album", "City", "Concert", "Country", "MusicalGroup", "Place", "Track"]
+    classes = ["Artist", "Album", "Concert", "MusicalGroup", "Track"]
     labels = {}
     classes.each do |c|
       labels_array = get_labels(c)
@@ -75,6 +76,7 @@ class Search < ActiveRecord::Base
       end
     end
     
+    p "Class Labels"
     ap labels
     
     terms = terms.split(" ")
@@ -120,15 +122,9 @@ class Search < ActiveRecord::Base
         aux = get_album(names, term_array)
         
         add_result(results, aux)
-      elsif labels[label] == "City"
-        add_result(results, aux)
       elsif labels[label] == "Concert"
         aux = get_concerts(names, term_array)
         
-        add_result(results, aux)
-      elsif labels[label] == "Country"
-        add_result(results, aux)
-      elsif labels[label] == "Genre"
         add_result(results, aux)
       elsif labels[label] == "MusicalGroup"
         aux = get_musicalgroup(names, term_array)
@@ -154,7 +150,7 @@ class Search < ActiveRecord::Base
         results = get_from_property(names, properties_query)
         ap names
         return results
-      else
+      else # Search everywhere
         ap names
         puts "---------------"
         aux = get_musicalgroup(names, properties)
@@ -414,8 +410,7 @@ class Search < ActiveRecord::Base
     
     begin
       dataset.begin(ReadWrite::READ)
-      ap terms
-      puts "--------------------------"
+      
       add_query = ""
       filtered_terms = []
       terms.each do |term|
