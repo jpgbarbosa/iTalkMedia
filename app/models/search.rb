@@ -152,7 +152,7 @@ class Search < ActiveRecord::Base
       
       unless properties_query.empty?
         results = get_from_property(names, properties_query)
-        
+        ap names
         return results
       else
         ap names
@@ -279,9 +279,10 @@ class Search < ActiveRecord::Base
                 })
           
           query = QueryFactory.create(query)
-          
+
           qexec = QueryExecutionFactory.create(query, dataset)
           rs = qexec.exec_select
+          #ResultSetFormatter.out(rs)
           
           while rs.has_next
             qs = rs.next
@@ -292,6 +293,18 @@ class Search < ActiveRecord::Base
             else
               result[:name] = "<b>"+instance[:name]+"</b>" + " - " + qs.get("property_value_name").string.to_s
             end
+            
+            if instance[:type].end_with?("Track")
+              result[:type] = "musics"
+            elsif instance[:type].end_with?("MusicalGroup")
+              result[:type] = "groups"
+            elsif instance[:type].end_with?("Concert")
+              result[:type] = "Concert"
+            elsif instance[:type].end_with?("Album")
+              result[:type] = "albums"
+            end
+            
+            result[:id] = instance[:id].split("#").last
             results << result
           end
         end

@@ -582,6 +582,7 @@ class Music < ActiveRecord::Base
           placeformed_city.add_property(ont_p_name, placeformed_info[:city])
           placeformed_country = model.create_resource(place_ns+"#{placeformed_info[:country].gsub(' ', '+')}", ont_country)
           placeformed_country.add_property(ont_p_name, placeformed_info[:country])
+          placeformed.add_property(ont_p_name, placeformed_info[:city]+", "+placeformed_info[:country])
           placeformed.add_property(ont_p_inCity, placeformed_city).add_property(ont_p_inCountry, placeformed_country)
           placeformed.add_property(ont_p_latitude, placeformed_info[:lat]).add_property(ont_p_longitude, placeformed_info[:lng])
           musical_group.add_property(ont_p_placeFormed, placeformed)
