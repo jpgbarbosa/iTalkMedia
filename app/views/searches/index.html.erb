@@ -18,7 +18,7 @@
               
                    <!-- getting first one only -->
                   <td><%= search[:type] %></td>
-                  <td><%= search[:name] %></td>
+                  <td><%= search[:name].html_safe %></td>
 				  <% if search[:type] == "Concert" %>
                   <td>
                       <%= link_to 'Show', search[:url], :class => 'btn btn-primary' %>

@@ -55,8 +55,10 @@ module ChartLyricsAPI
     
     # REMOVE RINGTONE AD
     ads = doc.select("div.lyricbox div.rtMatcher")
-    element.removeChild(ads.first)
-    element.removeChild(ads.last)
+    
+    ads.each do |ad|
+      element.removeChild(ad)
+    end
     
     ret_value["success"] = true
     ret_value["data"] = element.text()

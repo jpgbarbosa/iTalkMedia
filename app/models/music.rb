@@ -236,7 +236,7 @@ class Music < ActiveRecord::Base
       rs = qexec.exec_select
       
       if !rs.has_next
-        return nil
+        return []
       end
       
       genres = []
@@ -298,7 +298,7 @@ class Music < ActiveRecord::Base
     all_tracks.each do |track|
       if track[:id] != track_id
         count = 0
-        
+
         track[:genres].each do |genre|
           # genre also in the album genre
           if genres_hash[genre] != nil
@@ -671,7 +671,6 @@ class Music < ActiveRecord::Base
           tags = []
         end
         tags.each do |tag|
-          puts tag
           begin
             tag_resource = model.create_resource(tag["url"].to_s, ont_genre)
             tag_resource.add_property(ont_p_name, tag["name"])
@@ -704,9 +703,9 @@ class Music < ActiveRecord::Base
             city, country = e["location"]["city"].split(",")
             city.strip!
             country.strip!
-            city_r = model.create_resource(place_ns+"#{country}-#{city}", ont_city)
+            city_r = model.create_resource(place_ns+"#{country.gsub(' ', '+')}-#{city.gsub(' ', '+')}", ont_city)
             city_r.add_property(ont_p_name, city)
-            country_r = model.create_resource(place_ns+"#{country}", ont_country)
+            country_r = model.create_resource(place_ns+"#{country.gsub(' ', '+')}", ont_country)
             country_r.add_property(ont_p_name, country)
 
             place.add_property(ont_p_inCity, city_r)
@@ -734,7 +733,7 @@ class Music < ActiveRecord::Base
         
       end
 	    
-      model.write(java.lang.System::out, "RDF/XML-ABBREV")
+      #model.write(java.lang.System::out, "RDF/XML-ABBREV")
       
       dataset.commit()
     ensure

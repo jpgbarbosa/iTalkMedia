@@ -33,11 +33,39 @@ class Search < ActiveRecord::Base
   # attr_accessible :title, :body
   
   def self.search(terms)
-    #get_cenas
     ontology_ns = "http://musicontology.ws.dei.uc.pt/ontology.owl#"
     
-    classes = ["Artist", "Album", "City", "Concert", "Country", "Genre", "MusicalGroup", "Place", "Track"]
+    #PROPERTIES LABELS
+    properties_ont = ONTOLOGY.list_ont_properties()
+    labels_properties = {}
+    while properties_ont.has_next
+      property = properties_ont.next
+      labels_list = property.list_labels(nil)
+      
+      while labels_list.has_next
+        if labels_properties[property.get_local_name] == nil
+          labels_properties[property.get_local_name] = []
+        end
+        
+        labels_properties[property.get_local_name] << labels_list.next.string
+      end
+    end
     
+    # MATCH PROPERTY
+    properties_query = []
+    labels_properties.each do |property, label_array|
+      label_array.each do |label|
+        if terms.rindex(label) # property label found
+          unless properties_query.include?(property) # highly unlikely
+            properties_query << property
+          end
+        end
+      end
+    end
+    ap properties_query
+    
+    # CLASS LABELS
+    classes = ["Artist", "Album", "City", "Concert", "Country", "MusicalGroup", "Place", "Track"]
     labels = {}
     classes.each do |c|
       labels_array = get_labels(c)
@@ -52,9 +80,8 @@ class Search < ActiveRecord::Base
     terms = terms.split(" ")
     
     terms_label = {}
-    previous_label = []
-    previous_properties = []
-    last_is_label = true
+    labels_query = []
+    properties = []
     
     terms.each do |term|
       if labels.has_key?(term.downcase) # is label
@@ -62,24 +89,17 @@ class Search < ActiveRecord::Base
           terms_label[term.downcase] = []
         end
         
-        if last_is_label
-          previous_label << term.downcase
-        else
-          previous_label = []
-          previous_label << term.downcase
-          last_is_label = true
-        end
+        labels_query << term.downcase
         
       else # is property
-        unless previous_label.empty?
-          previous_label.each do |label|
-            terms_label[label] << term
-          end
-        else
-          previous_properties << term
-        end
-        
-        last_is_label = false
+        properties << term
+      end
+    end
+    
+    # Assign all the labels the same terms
+    labels_query.each do |label|
+      properties.each do |prop|
+        terms_label[label] << prop
       end
     end
     
@@ -91,17 +111,19 @@ class Search < ActiveRecord::Base
       end
       
       if labels[label] == "Artist"
-        aux = get_artist(names)
+        aux = get_artist(names, term_array)
         
         add_result(results, aux)
       elsif labels[label] == "Album"
-        aux = get_album(names)
+        ap names
+        puts "-----------------"
+        aux = get_album(names, term_array)
         
         add_result(results, aux)
       elsif labels[label] == "City"
         add_result(results, aux)
       elsif labels[label] == "Concert"
-        aux = get_concerts(names)
+        aux = get_concerts(names, term_array)
         
         add_result(results, aux)
       elsif labels[label] == "Country"
@@ -109,14 +131,14 @@ class Search < ActiveRecord::Base
       elsif labels[label] == "Genre"
         add_result(results, aux)
       elsif labels[label] == "MusicalGroup"
-        aux = get_musicalgroup(names)
+        aux = get_musicalgroup(names, term_array)
         ap names
         
         add_result(results, aux)
       elsif labels[label] == "Place"
         add_result(results, aux)
       elsif labels[label] == "Track"
-        aux = get_tracks(names)
+        aux = get_tracks(names, term_array)
         
         add_result(results, aux)
       else
@@ -124,23 +146,32 @@ class Search < ActiveRecord::Base
       end
     end
     
-    unless previous_properties.empty?
-      names = get_names(previous_properties)
+    # no class labels, only property values
+    if labels_query.empty?
+      names = get_names(properties)
       
-      aux = get_musicalgroup(names)
-      add_result(results, aux)
+      unless properties_query.empty?
+        results = get_from_property(names, properties_query)
+        
+        return results
+      else
+        ap names
+        puts "---------------"
+        aux = get_musicalgroup(names, properties)
+        add_result(results, aux)
       
-      aux = get_artist(names)
-      add_result(results, aux)
+        aux = get_artist(names, properties)
+        add_result(results, aux)
       
-      aux = get_album(names)
-      add_result(results, aux)
+        aux = get_album(names, properties)
+        add_result(results, aux)
       
-      aux = get_tracks(names)
-      add_result(results, aux)
+        aux = get_tracks(names, properties)
+        add_result(results, aux)
       
-      aux = get_concerts(names)
-      add_result(results, aux)
+        aux = get_concerts(names, properties)
+        add_result(results, aux)
+      end
     end
     
     
@@ -227,7 +258,52 @@ class Search < ActiveRecord::Base
     end
   end
   
-  def self.get_musicalgroup(terms)
+  def self.get_from_property(instances, properties)
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      
+      results = []
+      
+      properties.each do |property|
+        instances.each do |instance|
+          query = %Q(
+                PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+				    
+    				    SELECT ?property_value ?property_value_name
+                WHERE {
+                  <#{instance[:id]}> mo:#{property} ?property_value .
+                  OPTIONAL {?property_value mo:name ?property_value_name} .
+                })
+          
+          query = QueryFactory.create(query)
+          
+          qexec = QueryExecutionFactory.create(query, dataset)
+          rs = qexec.exec_select
+          
+          while rs.has_next
+            qs = rs.next
+            
+            result = {}
+            if qs.get("property_value_name")==nil
+              result[:name] = "<b>"+instance[:name]+"</b>" + " - " + qs.get("property_value").string.to_s
+            else
+              result[:name] = "<b>"+instance[:name]+"</b>" + " - " + qs.get("property_value_name").string.to_s
+            end
+            results << result
+          end
+        end
+      end
+
+      return results
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_musicalgroup(terms, original_term_array, property_labels=[])
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
@@ -262,17 +338,7 @@ class Search < ActiveRecord::Base
         end
       end
       
-      if filtered_terms.size > 0
-        query = %Q(
-              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
-					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-					    SELECT ?name ?id (COUNT(*) as ?count)
-              WHERE {
-                #{add_query}
-              }GROUP BY ?id ?name
-              ORDER BY DESC(?count))
-      else
+      if original_term_array.size == 0
         query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -283,6 +349,18 @@ class Search < ActiveRecord::Base
                   mo:name ?name ;
                   mo:hasBio ?bio .
               }GROUP BY ?id ?name)
+      elsif filtered_terms.size > 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id (COUNT(*) as ?count)
+              WHERE {
+                #{add_query}
+              }GROUP BY ?id ?name
+              ORDER BY DESC(?count))
+      else
+        return []
       end
 
       query = QueryFactory.create(query)
@@ -317,13 +395,14 @@ class Search < ActiveRecord::Base
     end
   end
   
-  def self.get_album(terms)
+  def self.get_album(terms, original_term_array)
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
     begin
       dataset.begin(ReadWrite::READ)
-      
+      ap terms
+      puts "--------------------------"
       add_query = ""
       filtered_terms = []
       terms.each do |term|
@@ -345,7 +424,17 @@ class Search < ActiveRecord::Base
         end
       end
       
-      if filtered_terms.size > 0
+      if original_term_array.size == 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id (COUNT(*) as ?count)
+              WHERE {
+                ?id rdf:type mo:Album ;
+                  mo:name ?name ;
+              }GROUP BY ?id ?name)
+      elsif filtered_terms.size > 0
         query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -357,16 +446,7 @@ class Search < ActiveRecord::Base
               ORDER BY DESC(?count))
               puts query
       else
-        puts "here"
-        query = %Q(
-              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
-					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-					    SELECT ?name ?id (COUNT(*) as ?count)
-              WHERE {
-                ?id rdf:type mo:Album ;
-                  mo:name ?name ;
-              }GROUP BY ?id ?name)
+        return []
       end
         
       query = QueryFactory.create(query)
@@ -401,7 +481,7 @@ class Search < ActiveRecord::Base
     end
   end
   
-  def self.get_tracks(terms)
+  def self.get_tracks(terms, original_term_array)
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
@@ -431,7 +511,17 @@ class Search < ActiveRecord::Base
         end
       end
       
-      if filtered_terms.size > 0
+      if original_term_array.size == 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id (COUNT(*) as ?count)
+              WHERE {
+                ?id rdf:type mo:Track ;
+                  mo:name ?name ;
+              }GROUP BY ?id ?name)
+      elsif filtered_terms.size > 0
         query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -443,16 +533,7 @@ class Search < ActiveRecord::Base
               ORDER BY DESC(?count))
               puts query
       else
-        puts "here"
-        query = %Q(
-              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
-					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-					    SELECT ?name ?id (COUNT(*) as ?count)
-              WHERE {
-                ?id rdf:type mo:Track ;
-                  mo:name ?name ;
-              }GROUP BY ?id ?name)
+        return []
       end
         
       query = QueryFactory.create(query)
@@ -487,7 +568,7 @@ class Search < ActiveRecord::Base
     end
   end
   
-  def self.get_concerts(terms)
+  def self.get_concerts(terms, original_term_array)
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
@@ -517,19 +598,7 @@ class Search < ActiveRecord::Base
         end
       end
       
-      if filtered_terms.size > 0
-        query = %Q(
-              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
-					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-					    SELECT ?name ?id ?url (COUNT(*) as ?count)
-              WHERE {
-                #{add_query}
-              } GROUP BY ?id ?name ?url
-              ORDER BY DESC(?count))
-              puts query
-      else
-        puts "here"
+      if original_term_array.size == 0
         query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -540,6 +609,18 @@ class Search < ActiveRecord::Base
                   mo:name ?name ;
               }GROUP BY ?id ?name ?url
               ORDER BY DESC(?count))
+      elsif filtered_terms.size > 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id ?url (COUNT(*) as ?count)
+              WHERE {
+                #{add_query}
+              } GROUP BY ?id ?name ?url
+              ORDER BY DESC(?count))
+      else
+        return []
       end
         
       query = QueryFactory.create(query)
@@ -576,7 +657,7 @@ class Search < ActiveRecord::Base
   end
   
   
-  def self.get_artist(terms)
+  def self.get_artist(terms, original_term_array)
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
@@ -602,7 +683,18 @@ class Search < ActiveRecord::Base
         end
       end
       
-      if filtered_terms.size > 0
+      if original_term_array.size == 0
+        query = %Q(
+              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					    SELECT ?name ?id ?artist (COUNT(*) as ?count)
+              WHERE {
+                ?id rdf:type mo:MusicalGroup ; mo:hasArtist ?artist . 
+                  ?artist rdf:type mo:Artist ; mo:name ?name .
+              }GROUP BY ?artist ?id ?name
+              ORDER BY DESC(?count))
+      elsif filtered_terms.size > 0
         query = %Q(
               PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
 					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -614,17 +706,7 @@ class Search < ActiveRecord::Base
               ORDER BY DESC(?count))
               puts query
       else
-        puts "here"
-        query = %Q(
-              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
-					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-					    SELECT ?name ?id ?artist (COUNT(*) as ?count)
-              WHERE {
-                ?id rdf:type mo:MusicalGroup ; mo:hasArtist ?artist . 
-                  ?artist rdf:type mo:Artist ; mo:name ?name .
-              }GROUP BY ?artist ?id ?name
-              ORDER BY DESC(?count))
+        return []
       end
         
       query = QueryFactory.create(query)
