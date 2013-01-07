@@ -112,6 +112,8 @@ class Search < ActiveRecord::Base
         names = get_names(term_array)
       end
       
+      add_result(results, get_from_property(names, properties_query, labels[label]) )
+      
       if labels[label] == "Artist"
         aux = get_artist(names, term_array)
         
@@ -186,10 +188,10 @@ class Search < ActiveRecord::Base
   
   def self.add_result(results, aux)
     aux.each do |r|
-      if results[r[:id]]!=nil
-        results[r[:id]][:count] += r[:count]
+      if results[r[:name]]!=nil
+        results[r[:name]][:count] += r[:count]
       else
-        results[r[:id]] = r
+        results[r[:name]] = r
       end
     end
   end
@@ -254,7 +256,7 @@ class Search < ActiveRecord::Base
     end
   end
   
-  def self.get_from_property(instances, properties)
+  def self.get_from_property(instances, properties, label="")
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
@@ -263,14 +265,22 @@ class Search < ActiveRecord::Base
       
       results = []
       
+      add_query = ""
+      if label != ""
+        add_query = " ; rdf:type mo:#{label} "
+      end
+      
+      ap label
+      ap properties
       properties.each do |property|
         instances.each do |instance|
           query = %Q(
                 PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 				    
     				    SELECT ?property_value ?property_value_name
                 WHERE {
-                  <#{instance[:id]}> mo:#{property} ?property_value .
+                  <#{instance[:id]}> mo:#{property} ?property_value #{add_query} .
                   OPTIONAL {?property_value mo:name ?property_value_name} .
                 })
           
@@ -300,7 +310,53 @@ class Search < ActiveRecord::Base
               result[:type] = "albums"
             end
             
+            result[:count] = 1
             result[:id] = instance[:id].split("#").last
+            results << result
+          end
+        end
+        
+        if instances.size == 0
+          query = %Q(
+                PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+				    
+    				    SELECT ?id ?name ?property_value ?property_value_name ?type
+                WHERE {
+                  ?id mo:#{property} ?property_value ; mo:name ?name ; rdf:type ?type #{add_query} .
+                  OPTIONAL {?property_value mo:name ?property_value_name} .
+                })
+          
+          query = QueryFactory.create(query)
+
+          qexec = QueryExecutionFactory.create(query, dataset)
+          rs = qexec.exec_select
+          #ResultSetFormatter.out(rs)
+          
+          while rs.has_next
+            qs = rs.next
+            
+            result = {}
+            if qs.get("property_value_name")==nil
+              result[:name] = "<b>"+qs.get("name").string.to_s+"</b>" + " - " + qs.get("property_value").string.to_s
+            else
+              result[:name] = "<b>"+qs.get("name").string.to_s+"</b>" + " - " + qs.get("property_value_name").string.to_s
+            end
+            
+            type = qs.get("type").get_uri
+
+            if type.end_with?("Track")
+              result[:type] = "musics"
+            elsif type.end_with?("MusicalGroup")
+              result[:type] = "groups"
+            elsif type.end_with?("Concert")
+              result[:type] = "Concert"
+            elsif type.end_with?("Album")
+              result[:type] = "albums"
+            end
+            
+            result[:count] = 1
+            result[:id] = qs.get("id").get_uri.split("#").last
             results << result
           end
         end
@@ -312,7 +368,7 @@ class Search < ActiveRecord::Base
     end
   end
   
-  def self.get_musicalgroup(terms, original_term_array, property_labels=[])
+  def self.get_musicalgroup(terms, original_term_array)
     directory = "music_database"
     dataset = TDBFactory.create_dataset(directory);
     
