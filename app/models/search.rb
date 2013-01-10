@@ -207,7 +207,7 @@ class Search < ActiveRecord::Base
       terms.each do |term|
         add_query += " {?id mo:name ?name ;
                    rdf:type ?type .
-                   FILTER regex(?name, '#{term}', 'i')} "
+                   FILTER regex(?name, '(^| )#{term}($| )', 'i')} "
         if term != terms.last
           add_query += " UNION "
         end
@@ -270,8 +270,6 @@ class Search < ActiveRecord::Base
         add_query = " ; rdf:type mo:#{label} "
       end
       
-      ap label
-      ap properties
       properties.each do |property|
         instances.each do |instance|
           query = %Q(
@@ -382,7 +380,7 @@ class Search < ActiveRecord::Base
           filtered_terms << term
         end
       end
-      ap filtered_terms
+      
       filtered_terms.each do |term|
         if term[:type].end_with?("Genre")
           add_query += " { ?id mo:genre <#{term[:id]}> ; rdf:type mo:MusicalGroup ; mo:name ?name . } "

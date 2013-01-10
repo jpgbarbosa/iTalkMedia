@@ -302,7 +302,7 @@ class Music < ActiveRecord::Base
         count = 0
 
         track[:genres].each do |genre|
-          # genre also in the album genre
+          # genre also in the track genre
           if genres_hash[genre] != nil
             count = count+1
           end
@@ -480,7 +480,6 @@ class Music < ActiveRecord::Base
 			ont_concert = ONTOLOGY.get_ont_class(ontology_ns+"Concert")
 			ont_country = ONTOLOGY.get_ont_class(ontology_ns+"Country")
 			ont_genre = ONTOLOGY.get_ont_class(ontology_ns+"Genre")
-			ont_label = ONTOLOGY.get_ont_class(ontology_ns+"Label")
 			ont_musicalGroup = ONTOLOGY.get_ont_class(ontology_ns+"MusicalGroup")
 			ont_place = ONTOLOGY.get_ont_class(ontology_ns+"Place")
 			ont_track = ONTOLOGY.get_ont_class(ontology_ns+"Track")
@@ -507,7 +506,6 @@ class Music < ActiveRecord::Base
       ont_p_latitude = ONTOLOGY.get_property(ontology_ns+"latitude")
       ont_p_longitude = ONTOLOGY.get_property(ontology_ns+"longitude")
       ont_p_placeFormed = ONTOLOGY.get_property(ontology_ns+"placeFormed")
-      ont_p_isSimilarTo = ONTOLOGY.get_ont_property(ontology_ns+"isSimilarTo")
       ont_p_isLastFMSimilar = ONTOLOGY.get_ont_property(ontology_ns+"isLastFMSimilar")
 			ont_p_lastFMURL = ONTOLOGY.get_property(ontology_ns+"lastFMURL")
 			ont_p_bitrate = ONTOLOGY.get_property(ontology_ns+"bitrate")

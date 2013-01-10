@@ -116,6 +116,14 @@
     <owl:inverseOf rdf:resource="#isLastFMSimilar"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="hasTrack">
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >songs</rdfs:label>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >song</rdfs:label>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >tracks</rdfs:label>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >track</rdfs:label>
     <rdfs:range rdf:resource="#Track"/>
     <rdfs:domain>
       <owl:Class>
@@ -137,12 +145,8 @@
       </owl:Class>
     </rdfs:domain>
     <rdfs:range rdf:resource="#MusicalGroup"/>
-  </owl:ObjectProperty>
-  <owl:ObjectProperty rdf:ID="isSimilarTo">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
-    <rdfs:domain rdf:resource="#MusicalGroup"/>
-    <rdfs:range rdf:resource="#MusicalGroup"/>
-    <owl:inverseOf rdf:resource="#isSimilarTo"/>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >band</rdfs:label>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="genre">
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -175,6 +179,8 @@
     <rdfs:domain rdf:resource="#Concert"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="inAlbum">
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >album</rdfs:label>
     <rdfs:domain rdf:resource="#Track"/>
     <rdfs:range rdf:resource="#Album"/>
   </owl:ObjectProperty>
@@ -283,6 +289,8 @@
     </rdfs:domain>
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >name</rdfs:label>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >names</rdfs:label>
   </owl:FunctionalProperty>
   <owl:FunctionalProperty rdf:ID="tracklength">
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -343,6 +351,10 @@
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
     <rdfs:domain rdf:resource="#Track"/>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >last played</rdfs:label>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >date listened</rdfs:label>
   </owl:FunctionalProperty>
   <owl:FunctionalProperty rdf:ID="foundationYear">
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -352,15 +364,6 @@
     <rdfs:domain rdf:resource="#MusicalGroup"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-  </owl:FunctionalProperty>
-  <owl:FunctionalProperty rdf:ID="playcount">
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-    <rdfs:domain rdf:resource="#Track"/>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >plays</rdfs:label>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >play count</rdfs:label>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
   </owl:FunctionalProperty>
   <owl:FunctionalProperty rdf:ID="date">
     <rdfs:domain>
@@ -376,6 +379,15 @@
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >release date</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </owl:FunctionalProperty>
+  <owl:FunctionalProperty rdf:ID="playcount">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:domain rdf:resource="#Track"/>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >plays</rdfs:label>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >play count</rdfs:label>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
   </owl:FunctionalProperty>
 </rdf:RDF>
