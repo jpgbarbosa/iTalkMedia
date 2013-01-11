@@ -211,7 +211,7 @@ class Search < ActiveRecord::Base
       terms.each do |term|
         add_query += " {?id mo:name ?name ;
                    rdf:type ?type .
-                   FILTER regex(?name, '(^| )#{term}($| )', 'i')} "
+                   FILTER regex(?name, \"(^| )#{term}($| )\", 'i')} "
         if term != terms.last
           add_query += " UNION "
         end
@@ -395,7 +395,7 @@ class Search < ActiveRecord::Base
         elsif term[:type].end_with?("Country")
           add_query += " { ?id rdf:type mo:MusicalGroup ; mo:placeFormed ?place ; mo:name ?name ; mo:hasBio ?bio . ?place rdf:type mo:Place ; mo:inCountry <#{term[:id]}> . } "
         elsif term[:type].end_with?("MusicalGroup")
-          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:name '#{term[:name]}' ; mo:name ?name ; mo:hasBio ?bio . } "
+          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:name \"#{term[:name]}\" ; mo:name ?name ; mo:hasBio ?bio . } "
         elsif term[:type].end_with?("Artist")
           add_query += " { ?id rdf:type mo:MusicalGroup ; mo:name ?name ; mo:hasBio ?bio ; mo:hasArtist <#{term[:id]}> . } "
         end
@@ -482,7 +482,7 @@ class Search < ActiveRecord::Base
         elsif term[:type].end_with?("MusicalGroup")
           add_query += " { ?id rdf:type mo:Album ; mo:musicalgroup <#{term[:id]}> ; mo:name ?name . } "
         elsif term[:type].end_with?("Album")
-          add_query += " { ?id rdf:type mo:Album ; mo:name '#{term[:name]}' ; mo:name ?name . } "
+          add_query += " { ?id rdf:type mo:Album ; mo:name \"#{term[:name]}\" ; mo:name ?name . } "
         end
         
         if term != filtered_terms.last
@@ -568,7 +568,7 @@ class Search < ActiveRecord::Base
         elsif term[:type].end_with?("Album")
           add_query += " { <#{term[:id]}> rdf:type mo:Album ; mo:hasTrack ?id . ?id rdf:type mo:Track ; mo:name ?name . } "
         elsif term[:type].end_with?("Track")
-          add_query += " { ?id rdf:type mo:Track ; mo:name '#{term[:name]}' ; mo:name ?name . } "
+          add_query += " { ?id rdf:type mo:Track ; mo:name \"#{term[:name]}\" ; mo:name ?name . } "
         end
         
         if term != filtered_terms.last
@@ -648,7 +648,7 @@ class Search < ActiveRecord::Base
       end
       filtered_terms.each do |term|
         if term[:type].end_with?("Concert")
-          add_query += " { ?id rdf:type mo:Concert ; mo:name '#{term[:name]}' ; mo:name ?name ; mo:songKickURL ?url . } "
+          add_query += " { ?id rdf:type mo:Concert ; mo:name \"#{term[:name]}\" ; mo:name ?name ; mo:songKickURL ?url . } "
         elsif term[:type].end_with?("MusicalGroup")
           add_query += " { ?id rdf:type mo:Concert ; mo:hasPerformance <#{term[:id]}> ; mo:name ?name ; mo:songKickURL ?url . } "
         elsif term[:type].end_with?("City")
@@ -737,7 +737,7 @@ class Search < ActiveRecord::Base
       end
       filtered_terms.each do |term|
         if term[:type].end_with?("MusicalGroup")
-          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:name '#{term[:name]}' ; mo:hasArtist ?artist . ?artist rdf:type mo:Artist ; mo:name ?name . } "
+          add_query += " { ?id rdf:type mo:MusicalGroup ; mo:name \"#{term[:name]}\" ; mo:hasArtist ?artist . ?artist rdf:type mo:Artist ; mo:name ?name . } "
         elsif term[:type].end_with?("Artist")
           add_query += " { ?id rdf:type mo:MusicalGroup ; mo:hasArtist <#{term[:id]}> ; mo:hasArtist ?artist . ?artist rdf:type mo:Artist ; mo:name ?name . } "
         end
