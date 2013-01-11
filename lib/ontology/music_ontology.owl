@@ -301,6 +301,10 @@
   </owl:FunctionalProperty>
   <owl:FunctionalProperty rdf:ID="inPlace">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >places</rdfs:label>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >place</rdfs:label>
     <rdfs:range rdf:resource="#Place"/>
     <rdfs:domain rdf:resource="#Concert"/>
   </owl:FunctionalProperty>
@@ -365,19 +369,17 @@
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
   </owl:FunctionalProperty>
-  <owl:FunctionalProperty rdf:ID="date">
-    <rdfs:domain>
-      <owl:Class>
-        <owl:unionOf rdf:parseType="Collection">
-          <rdfs:Class rdf:about="#Concert"/>
-          <rdfs:Class rdf:about="#Album"/>
-        </owl:unionOf>
-      </owl:Class>
-    </rdfs:domain>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >date</rdfs:label>
+  <owl:FunctionalProperty rdf:ID="releasedate">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:domain rdf:resource="#Album"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >release date</rdfs:label>
+  </owl:FunctionalProperty>
+  <owl:FunctionalProperty rdf:ID="date">
+    <rdfs:domain rdf:resource="#Concert"/>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >date</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
   </owl:FunctionalProperty>

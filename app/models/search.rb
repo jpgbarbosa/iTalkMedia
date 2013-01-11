@@ -112,33 +112,28 @@ class Search < ActiveRecord::Base
         names = get_names(term_array)
       end
       
-      add_result(results, get_from_property(names, properties_query, labels[label]) )
+      add_result(results, get_from_property(names, properties_query, labels[label]), names )
       
       if labels[label] == "Artist"
         aux = get_artist(names, term_array)
         
-        add_result(results, aux)
+        add_result(results, aux, names)
       elsif labels[label] == "Album"
-        ap names
-        puts "-----------------"
         aux = get_album(names, term_array)
         
-        add_result(results, aux)
+        add_result(results, aux, names)
       elsif labels[label] == "Concert"
         aux = get_concerts(names, term_array)
         
-        add_result(results, aux)
+        add_result(results, aux, names)
       elsif labels[label] == "MusicalGroup"
         aux = get_musicalgroup(names, term_array)
-        ap names
         
-        add_result(results, aux)
-      elsif labels[label] == "Place"
-        add_result(results, aux)
+        add_result(results, aux, names)
       elsif labels[label] == "Track"
         aux = get_tracks(names, term_array)
         
-        add_result(results, aux)
+        add_result(results, aux, names)
       else
         puts "DEU BODE"
       end
@@ -156,19 +151,19 @@ class Search < ActiveRecord::Base
         ap names
         puts "---------------"
         aux = get_musicalgroup(names, properties)
-        add_result(results, aux)
+        add_result(results, aux, names)
       
         aux = get_artist(names, properties)
-        add_result(results, aux)
+        add_result(results, aux, names)
       
         aux = get_album(names, properties)
-        add_result(results, aux)
+        add_result(results, aux, names)
       
         aux = get_tracks(names, properties)
-        add_result(results, aux)
+        add_result(results, aux, names)
       
         aux = get_concerts(names, properties)
-        add_result(results, aux)
+        add_result(results, aux, names)
       end
     end
     
@@ -186,11 +181,20 @@ class Search < ActiveRecord::Base
   
   private
   
-  def self.add_result(results, aux)
+  def self.add_result(results, aux, names)
     aux.each do |r|
+      count = 0
+      
+      names.each do |name|
+        if name[:id].split("#").last == r[:id]
+          count = name[:count]
+        end
+      end
+      
       if results[r[:name]]!=nil
-        results[r[:name]][:count] += r[:count]
+        results[r[:name]][:count] += r[:count]+count
       else
+        r[:count] = r[:count]+count
         results[r[:name]] = r
       end
     end
@@ -506,7 +510,6 @@ class Search < ActiveRecord::Base
                 #{add_query}
               } GROUP BY ?id ?name
               ORDER BY DESC(?count))
-              puts query
       else
         return []
       end
@@ -593,7 +596,6 @@ class Search < ActiveRecord::Base
                 #{add_query}
               } GROUP BY ?id ?name
               ORDER BY DESC(?count))
-              puts query
       else
         return []
       end
@@ -766,7 +768,6 @@ class Search < ActiveRecord::Base
                 #{add_query}
               } GROUP BY ?artist ?id ?name
               ORDER BY DESC(?count))
-              puts query
       else
         return []
       end
