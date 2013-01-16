@@ -283,20 +283,24 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </a>
-            <a class="brand active" href="#">iTalkMedia</a>
+            <a class="brand active" href="/">iTalkMedia</a>
             <!-- Responsive Navbar Part 2: Place all navbar contents you want collapsed withing .navbar-collapse.collapse. -->
             <div class="nav-collapse collapse">
               <ul class="nav">
-                <li><a href="/groups">Bands</a></li>
-                <li><a href="/albums">Albums</a></li>
-                <li><a href="/musics">Musics</a></li>
-                <li><a href="/musics/new">New Music</a></li>
+                <li><%= link_to "Bands", groups_path %></li>
+                <li><%= link_to "Albums", albums_path %></li>
+                <li><%= link_to "Musics", musics_path %></li>
+                <li><%= link_to "New Music", new_music_path %></li>
+                <li><%= link_to "Contact Us", '#' %></li>
               </ul>
-
-              <form id="semantic-search" class="navbar-search pull-right" action='/searches' method='get'>
-                <input type="text" class="search-query" placeholder="Search" name="search">
-              </form>
             </div><!--/.nav-collapse -->
+
+            <div class="nav pull-right" style="margin-top:9px">
+                  <form id="semantic-search" class="navbar-search" action='/searches' method='get'>
+                    <input type="text" class="search-query" placeholder="Search" name="search">
+                  </form>
+            </div> 
+
           </div><!-- /.navbar-inner -->
         </div><!-- /.navbar -->
 

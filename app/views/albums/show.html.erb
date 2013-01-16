@@ -90,8 +90,10 @@
     </div>
   </div>
 
-  <%= link_to 'Edit', edit_album_path(@album) %> |
-  <a href="javascript: history.go(-1)">Back</a>
+  <div class="form-actions">
+    <%= link_to t('.back', :default => t("helpers.links.back")),
+                albums_path, :class => 'btn'  %>
+  </div>
 
 </div>
 
