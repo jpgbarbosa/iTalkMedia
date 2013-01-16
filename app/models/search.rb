@@ -35,6 +35,10 @@ class Search < ActiveRecord::Base
   def self.search(terms)
     ontology_ns = "http://musicontology.ws.dei.uc.pt/ontology.owl#"
     
+    if terms == ""
+      return []
+    end
+    
     #PROPERTIES LABELS
     properties_ont = ONTOLOGY.list_ont_properties()
     labels_properties = {}
@@ -117,25 +121,45 @@ class Search < ActiveRecord::Base
       if labels[label] == "Artist"
         aux = get_artist(names, term_array)
         
+        unless properties_query.empty?
+          aux = get_property_value(aux, properties_query)
+        end
+        
         add_result(results, aux, names)
       elsif labels[label] == "Album"
         aux = get_album(names, term_array)
+        
+        unless properties_query.empty?
+          aux = get_property_value(aux, properties_query)
+        end
         
         add_result(results, aux, names)
       elsif labels[label] == "Concert"
         aux = get_concerts(names, term_array)
         
+        unless properties_query.empty?
+          aux = get_property_value(aux, properties_query)
+        end
+        
         add_result(results, aux, names)
       elsif labels[label] == "MusicalGroup"
         aux = get_musicalgroup(names, term_array)
+        
+        unless properties_query.empty?
+          aux = get_property_value(aux, properties_query)
+        end
         
         add_result(results, aux, names)
       elsif labels[label] == "Track"
         aux = get_tracks(names, term_array)
         
+        unless properties_query.empty?
+          aux = get_property_value(aux, properties_query)
+        end
+        
         add_result(results, aux, names)
       else
-        puts "DEU BODE"
+        puts "System Failure!"
       end
     end
     
@@ -359,6 +383,61 @@ class Search < ActiveRecord::Base
             
             result[:count] = 1
             result[:id] = qs.get("id").get_uri.split("#").last
+            results << result
+          end
+        end
+      end
+
+      return results
+    ensure
+      dataset.end()
+    end
+  end
+  
+  def self.get_property_value(results_label, properties_query)
+    ns = "http://musicontology.ws.dei.uc.pt/music#"
+    directory = "music_database"
+    dataset = TDBFactory.create_dataset(directory);
+    
+    begin
+      dataset.begin(ReadWrite::READ)
+      
+      results = []
+      results_label.each do |r|
+        properties_query.each do |prop|
+          query = %Q(
+                  PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
+    					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    					    SELECT ?property_value ?property_value_name
+                  WHERE {
+                    <#{ns+r[:id]}> mo:#{prop} ?property_value .
+                    OPTIONAL {?property_value mo:name ?property_value_name} .
+                  })
+                  
+          query = QueryFactory.create(query)
+
+          qexec = QueryExecutionFactory.create(query, dataset)
+          rs = qexec.exec_select
+          #ResultSetFormatter.out(rs)
+      
+          if !rs.has_next
+            next
+          end
+          
+          while rs.has_next
+            qs = rs.next
+        
+            result = {}
+            result[:id] = r[:id]
+            result[:type] = r[:type]
+            if qs.get("property_value_name")==nil
+              result[:name] = "<b>"+r[:name]+"</b> - "+qs.get("property_value").string.to_s
+            else
+              result[:name] = "<b>"+r[:name]+"</b> - "+qs.get("property_value_name").string.to_s
+            end
+            result[:count] = r[:count]
+            
             results << result
           end
         end
@@ -800,46 +879,6 @@ class Search < ActiveRecord::Base
       end
       ap artists
       return artists
-    ensure
-      dataset.end()
-    end
-  end
-  
-  def self.get_cenas
-    directory = "music_database"
-    dataset = TDBFactory.create_dataset(directory);
-    
-    begin
-      dataset.begin(ReadWrite::READ)
-      query = %Q(
-              PREFIX mo: <http://musicontology.ws.dei.uc.pt/ontology.owl#>
-					    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-					    SELECT ?id (COUNT(*) as ?count)
-              WHERE {
-                {
-                  ?id mo:genre ?genre ;
-                    rdf:type mo:MusicalGroup .
-                  ?genre mo:name "indie" .
-                }
-                UNION
-                {
-                  ?id mo:genre ?genre ;
-                    rdf:type mo:MusicalGroup .
-                  ?genre mo:name "rock" .
-                }
-              } GROUP BY ?id
-               ORDER BY DESC(?count))
-        
-      query = QueryFactory.create(query)
-
-      qexec = QueryExecutionFactory.create(query, dataset)
-      rs = qexec.exec_select
-      ResultSetFormatter.out(rs)
-      
-      if !rs.has_next
-        return []
-      end
     ensure
       dataset.end()
     end
