@@ -228,9 +228,10 @@ var popupas = function(id) {
 </script>
 
 
-
-<%= link_to 'Edit', edit_group_path(@group) %> |
-<%= link_to 'Back', groups_path %>
+<div class="form-actions">
+    <%= link_to t('.back', :default => t("helpers.links.back")),
+                groups_path, :class => 'btn'  %>
+  </div>
 
 </div>
 
