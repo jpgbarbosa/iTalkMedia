@@ -146,8 +146,11 @@ class Search < ActiveRecord::Base
         aux = get_musicalgroup(names, term_array)
         
         unless properties_query.empty?
+          ap properties_query
           aux = get_property_value(aux, properties_query)
+          puts "HERE"
         end
+        ap aux
         
         add_result(results, aux, names)
       elsif labels[label] == "Track"

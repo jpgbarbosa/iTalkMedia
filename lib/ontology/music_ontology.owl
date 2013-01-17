@@ -117,13 +117,9 @@
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="hasTrack">
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >songs</rdfs:label>
+    >album tracks</rdfs:label>
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >song</rdfs:label>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >tracks</rdfs:label>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >track</rdfs:label>
+    >albums tracks</rdfs:label>
     <rdfs:range rdf:resource="#Track"/>
     <rdfs:domain>
       <owl:Class>
@@ -145,8 +141,6 @@
       </owl:Class>
     </rdfs:domain>
     <rdfs:range rdf:resource="#MusicalGroup"/>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >band</rdfs:label>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="genre">
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -179,8 +173,6 @@
     <rdfs:domain rdf:resource="#Concert"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="inAlbum">
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >album</rdfs:label>
     <rdfs:domain rdf:resource="#Track"/>
     <rdfs:range rdf:resource="#Album"/>
   </owl:ObjectProperty>
